@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>AsyncEvent - Documentation</title>
+    <title>Global - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,7 +27,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">AsyncEvent</h1>
+    <h1 class="page-title">Global</h1>
     
 
     
@@ -40,10 +40,8 @@
 <header>
     
         <h2>
-        AsyncEvent
-        </h2>
         
-            <div class="class-description"><p>A convenient event argument container that allows async processing for subscribing events.</p></div>
+        </h2>
         
     
 </header>
@@ -53,24 +51,8 @@
     
         
 
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="AsyncEvent"><span class="type-signature"></span>new AsyncEvent<span class="signature">(eventName, base, args)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
 <dl class="details">
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="modelProxy.js.html">modelProxy.js</a>, <a href="modelProxy.js.html#line24">line 24</a>
-    </li></ul></dd>
     
 
     
@@ -107,131 +89,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// simple eventlet EventEmitter = require('event');let emitter = new EventEmitter();let e = new AsyncEvent('myevent', emitter, { a: 1});emitter.on('myevent', e => {  // emulate a long running promise,  // any event that requies pausing further flow can insert a promise.  e.await(new Promise(resolve => {    setTimeout(resolve, 5000);  }));})// triggers events and waits until all event promises resolvee.wait().then(() => { console.log("Called after all event promises are resolved");})</code></pre>
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
         
 
         
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>eventName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Event Name.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>base</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>EventHandler instance to trigger event in behalve of.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Event arguments to pass during event trigger.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
     </div>
 
@@ -255,7 +115,7 @@
 
     
 
-    <h4 class="name" id="await"><span class="type-signature"></span>await<span class="signature">(promise)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="asc"><span class="type-signature"></span>asc<span class="signature">(col)</span><span class="type-signature"> &rarr; {function}</span></h4>
 
     
 
@@ -267,7 +127,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="modelProxy.js.html">modelProxy.js</a>, <a href="modelProxy.js.html#line45">line 45</a>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line11">line 11</a>
     </li></ul></dd>
     
 
@@ -307,9 +167,9 @@
 
 
 <div class="description">
-    <p>If an event handler needs to run a long running process, this method
-allows them the insert a promise into a wait queue so implementing code
-can wait for these promises to resolve or be rejected.</p>
+    <p>This is the default implementation of a query ascending behaviour.
+Usually, custom models may replace this function generate their internal
+query language.</p>
 </div>
 
 
@@ -318,6 +178,11 @@ can wait for these promises to resolve or be rejected.</p>
 
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// used on a fetch query on some model.model.fetch({ orderby: r => asc(r.id) });</code></pre>
 
 
 
@@ -347,13 +212,13 @@ can wait for these promises to resolve or be rejected.</p>
 
         <tr>
             
-                <td class="name"><code>promise</code></td>
+                <td class="name"><code>col</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Promise</span>
+<span class="param-type">string</span>
 
 
             
@@ -363,142 +228,7 @@ can wait for these promises to resolve or be rejected.</p>
 
             
 
-            <td class="description last"><p>A promise to add to our wait list</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="wait"><span class="type-signature"></span>wait<span class="signature">(data)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="modelProxy.js.html">modelProxy.js</a>, <a href="modelProxy.js.html#line56">line 56</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description">
-    <p>If event handlers added long running promisses through the await function this method can be used
-to chain more processes that should only run after these event promises have resolved.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A convenient way to enable this method to be chained. 
-                Any data passed will be passed along untouched down at the end of the wait promise.</p></td>
+            <td class="description last"><p>The column to order in ascending order</p></td>
         </tr>
 
     
@@ -522,7 +252,7 @@ to chain more processes that should only run after these event promises have res
 
         
 <div class="param-desc">
-    <p>A promise which will pass the provided data object if passed.</p>
+    <p>A comparison function to use between two objects</p>
 </div>
 
 
@@ -533,7 +263,482 @@ to chain more processes that should only run after these event promises have res
     </dt>
     <dd>
         
-<span class="param-type">Promise</span>
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="desc"><span class="type-signature"></span>desc<span class="signature">(col)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>This is the default implementation of a query descending behaviour.
+Usually, custom models may replace this function generate their internal
+query language.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// used on a fetch query on some model.model.fetch({ orderby: r => desc(r.id) });</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>col</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The column to order in descending order</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A comparison function to use between two objects</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isArrowFunction"><span class="type-signature"></span>isArrowFunction<span class="signature">(fn)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line76">line 76</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A value to test if is considered an arrow function.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true or false</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="multiColSort"><span class="type-signature"></span>multiColSort<span class="signature">(orderby)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Helper function. It accumulates an array of asc or desc calls to implement
+multi column sorting for local stores. It is usually used internally and should
+not be used outside of building custom models.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// multi column sorting[ {a: 1, b:1},  {a:1, b: 2},  {a: 2, b:1},  {a: 2, b: 2}].sort(multiColSort([asc('a'), desc('b')]))// result:[ {a: 1, b: 2}, {a: 1, b: 1}, {a: 2, b: 2}, {a: 2, b: 1}]</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>orderby</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An array or single asc/desc function to accumulate</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A comparison function which combines the provided array of sort functions.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
 
 
     </dd>
@@ -560,7 +765,7 @@ to chain more processes that should only run after these event promises have res
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jul 16 2018 00:21:29 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jul 16 2018 01:24:03 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

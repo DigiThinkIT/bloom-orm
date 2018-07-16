@@ -10,6 +10,8 @@ const pkg = require('./package.json');
 const gulp = require('gulp');
 const mocha = require('gulp-mocha');
 const clear = require('clear');
+const vinylPaths = require('vinyl-paths');
+const del = require('del');
 
 var child_exec = require('child_process').exec;
 
@@ -77,8 +79,17 @@ gulp.task('test', ['build-umd', 'build-cjs-es'], () => {
         }))
 });
 
-gulp.task('docs', ['build'], function(done) {
-    child_exec('node ./node_modules/jsdoc/jsdoc.js -c ./jsdoc.json', undefined, done);
+gulp.task('docs', ['build'], function (done) {
+    let docPath = `./docs/${pkg.name}/${pkg.version}`;
+    function moveDocs() {
+        gulp.src(`${docPath}/**/*`, { base: docPath })
+            .pipe(gulp.dest('./docs')).on('end', () => { cleanDocs(done) });
+    }
+    function cleanDocs(done) {
+        gulp.src(`./docs/${pkg.name}`, { base: './', read: false })
+            .pipe(vinylPaths(del)).on('finish', () => { done() });
+    }
+    child_exec('node ./node_modules/jsdoc/jsdoc.js -c ./jsdoc.json', undefined, moveDocs);
 })
 
 gulp.task('build', ['build-umd', 'build-cjs-es', 'test']);
