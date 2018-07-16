@@ -3,7 +3,7 @@ let chai = require('chai'),
     path = require('path'),
     expect = chai.expect;
 
-let { queryUtils } = require(path.join(__dirname, '..', 'dist', 'freak-orm.umd'));
+let { queryUtils } = require(path.join(__dirname, '..', 'dist', 'bloom-orm.umd'));
 let { asc, desc } = queryUtils;
 let { isArrowFunction } = queryUtils;
 

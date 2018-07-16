@@ -1,8 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var events = require('events');
+import { EventEmitter } from 'events';
 
 /**
  * This is the default implementation of a query ascending behaviour.
@@ -91,13 +87,14 @@ var queryUtils = /*#__PURE__*/Object.freeze({
     isArrowFunction: isArrowFunction
 });
 
+// TODO: Implement model schema definitions to automate validation
 class Schema {
     constructor(options) {
         this.options = options;
     }
 
     validate(field, value) {
-
+        // TODO: validate agaisnt json schema
     }
 }
 
@@ -105,7 +102,7 @@ class Schema {
  * Base Model abstract class. All models should implement all methods on this class.
  * @extends EventEmitter
  */
-class ModelBase extends events.EventEmitter{
+class ModelBase extends EventEmitter{
     /**
      * 
      * @param {*} options
@@ -333,7 +330,7 @@ class ArrayModel extends ModelBase {
  * // simple event
  * let EventEmitter = require('event');
  * let emitter = new EventEmitter();
- * let e = new EventArgs('myevent', emitter, { a: 1});
+ * let e = new AsyncEvent('myevent', emitter, { a: 1});
  * emitter.on('myevent', e => {
  *   // emulate a long running promise,
  *   // any event that requies pausing further flow can insert a promise.
@@ -347,7 +344,7 @@ class ArrayModel extends ModelBase {
  *  console.log("Called after all event promises are resolved");
  * })
  */
-class EventArgs {
+class AsyncEvent {
 
     /**
      * 
@@ -394,7 +391,7 @@ class EventArgs {
  * A model facade class that encapsulates promise handling and connection management.
  * @extends ModelBase
  */
-class ModelFacade extends ModelBase {
+class ModelProxy extends ModelBase {
 
     /**
      * 
@@ -424,20 +421,20 @@ class ModelFacade extends ModelBase {
     async connect(data) {
         /**
          * Before connecting
-         * @event ModelFacade#beforeConnect
-         * @type {EventArgs}
+         * @event ModelProxy#beforeConnect
+         * @type {AsyncEvent}
          */
-        let beforeConnectEvent = new EventArgs('beforeConnect', this, {});
+        let beforeConnectEvent = new AsyncEvent('beforeConnect', this, {});
 
         /**
          * After connecting
-         * @event ModelFacade#afterConnect
-         * @type {EventArgs}
+         * @event ModelProxy#afterConnect
+         * @type {AsyncEvent}
          */
 
         return beforeConnectEvent.wait(data)
             .then(data => this._model.connect(data))
-            .then(data => new EventArgs('afterConnect', this, {}).wait(data))
+            .then(data => new AsyncEvent('afterConnect', this, {}).wait(data))
     }
 
     /**
@@ -450,20 +447,20 @@ class ModelFacade extends ModelBase {
     async disconnect(data) {
         /**
          * Before disconnecting
-         * @event ModelFacade#beforeDisconnect
-         * @type {EventArgs}
+         * @event ModelProxy#beforeDisconnect
+         * @type {AsyncEvent}
          */
-        let beforeDisconnectEvent = new EventArgs('beforeDisconnect', this, {});
+        let beforeDisconnectEvent = new AsyncEvent('beforeDisconnect', this, {});
 
         /**
          * After disconnecting
-         * @event ModelFacade#aftereDisconnect
-         * @type {EventArgs}
+         * @event ModelProxy#aftereDisconnect
+         * @type {AsyncEvent}
          */
 
         return beforeDisconnectEvent.wait(data)
             .then(data => this._model.disconnect(data))
-            .then(data => new EventArgs('afterDisconnect', this, {}).wait(data))
+            .then(data => new AsyncEvent('afterDisconnect', this, {}).wait(data))
     }
 
     /**
@@ -488,27 +485,27 @@ class ModelFacade extends ModelBase {
 
         /**
          * Before fetch
-         * @event ModelFacade#beforeFetch
+         * @event ModelProxy#beforeFetch
          * @property {object} query Query object containing, where, orderby, start and limit properties.
          * @property {function} query.where A where arrow function definition.
          * @property {function} query.orderby A record order by definition arrow function.
          * @property {int} query.start The record start index, used in pagination mostly.
          * @property {int} query.limit The maximum number of records to return.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
-        let beforeFetchEvent = new EventArgs('beforeFetch', this, { query });
+        let beforeFetchEvent = new AsyncEvent('beforeFetch', this, { query });
 
         /**
          * After fetch
-         * @event ModelFacade#afterFetch
+         * @event ModelProxy#afterFetch
          * @property {object} result A query result object containing records fetched.
          * @property {Array} result.rows Records fetched.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
 
         chain = chain.then(query => beforeFetchEvent.wait(query))
             .then(query => this._model.fetch(query))
-            .then(result => new EventArgs('afterFetch', this, { result }).wait(result));
+            .then(result => new AsyncEvent('afterFetch', this, { result }).wait(result));
 
         if (this.options.autoDisconnect) {
             chain = chain.then(this.disconnect);
@@ -532,22 +529,22 @@ class ModelFacade extends ModelBase {
 
         /**
          * Before update
-         * @event ModelFacade#beforeUpdate
+         * @event ModelProxy#beforeUpdate
          * @property { Array } rows Array of records to update.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
-        let beforeUpdateEvent = new EventArgs('beforeUpdate', this, { rows });
+        let beforeUpdateEvent = new AsyncEvent('beforeUpdate', this, { rows });
 
         /**
          * After update
-         * @event ModelFacade#afterUpdate
+         * @event ModelProxy#afterUpdate
          * @property { Array } rows Array of updated records.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
 
         chain = chain.then(rows => beforeUpdateEvent.wait(rows))
             .then(rows => this._model.update(rows))
-            .then(rows => new EventArgs('afterUpdate', this, { rows }).wait(rows));
+            .then(rows => new AsyncEvent('afterUpdate', this, { rows }).wait(rows));
 
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
@@ -571,22 +568,22 @@ class ModelFacade extends ModelBase {
 
         /**
          * Before create
-         * @event ModelFacade#beforeCreate
+         * @event ModelProxy#beforeCreate
          * @property {Array} rows Array of records to create.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
-        let beforeCreateEvent = new EventArgs('beforeCreate', this, { rows });
+        let beforeCreateEvent = new AsyncEvent('beforeCreate', this, { rows });
 
         /**
          * After create
-         * @event ModelFacade#aftereCreate
+         * @event ModelProxy#aftereCreate
          * @property {Array} rows Array of created records.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
 
         chain = chain.then(rows => beforeCreateEvent.wait(rows))
             .then(rows => this._model.create(rows))
-            .then(rows => new EventArgs('afterCreate', this, { rows }).wait(rows));
+            .then(rows => new AsyncEvent('afterCreate', this, { rows }).wait(rows));
 
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
@@ -611,22 +608,22 @@ class ModelFacade extends ModelBase {
 
         /**
          * Before delete
-         * @event ModelFacade#beforeDelete
+         * @event ModelProxy#beforeDelete
          * @property {Array} ids The record ids to delete.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
-        let beforeDeleteEvent = new EventArgs('beforeDelete', this, { ids });
+        let beforeDeleteEvent = new AsyncEvent('beforeDelete', this, { ids });
 
         /**
          * After delete
-         * @event ModelFacade#aftereDelete
+         * @event ModelProxy#aftereDelete
          * @property {Array} ids The record ids deleted.
-         * @type {EventArgs}
+         * @type {AsyncEvent}
          */
 
         chain = chain.then(ids => beforeDeleteEvent.wait(ids))
             .then(ids => this._model.delete(ids))
-            .then(ids => new EventArgs('afterDelete', this, { ids }).wait(ids));
+            .then(ids => new AsyncEvent('afterDelete', this, { ids }).wait(ids));
 
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
@@ -637,13 +634,8 @@ class ModelFacade extends ModelBase {
 }
 
 function createModel(options) {
-    return new ModelFacade(options);
+    return new ModelProxy(options);
 }
 
-exports.createModel = createModel;
-exports.ModelFacade = ModelFacade;
-exports.queryUtils = queryUtils;
-exports.Schema = Schema;
-exports.ModelBase = ModelBase;
-exports.ArrayModel = ArrayModel;
-//# sourceMappingURL=freak-orm.cjs.js.map
+export { createModel, ModelProxy, queryUtils, Schema, ModelBase, ArrayModel };
+//# sourceMappingURL=bloom-orm.esm.js.map

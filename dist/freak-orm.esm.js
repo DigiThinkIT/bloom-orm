@@ -97,52 +97,108 @@ class Schema {
     }
 }
 
-class ModelBase {
-    constructor(model) {
-        this.model = model;
+/**
+ * Base Model abstract class. All models should implement all methods on this class.
+ * @extends EventEmitter
+ */
+class ModelBase extends EventEmitter{
+    /**
+     * 
+     * @param {*} options
+     */
+    constructor(options) {
+        super();
+        this.options = options;
     }
 
+    /**
+     * @returns true if connected.
+     */
     get isConnected() {
         return false;
     }
 
-    connect(data) {
-        return this.model.Promise.resolve(data);
+    /**
+     * Connects the model to its backend.
+     * @param {*} data Any object to pass along when Promise chained.
+     * @returns {Promise} A promise resolved once the model's backend is connected.
+     */
+    async connect(data) {
+        return new Promise.resolve(data);
     }
 
-    disconnect(data) {
-        return this.model.Promise.resolve(data);
+    /**
+     * Disconnects the model from its backend
+     * @param {*} data Any object to pass along when Promise chained.
+     * @returns {Promise} A promise resolved once the model's backend is disconnected.
+     */
+    async disconnect(data) {
+        return new Promise.resolve(data);
     }
 
-    fetch(query) {
-        return this.model.Promise.resolve({ rows: [], total: 0 });
+    /**
+     * Data fetch method. Accepts either a 'where' arrow function or more complex
+     * object containing where, orderby, start, limit options.
+     * @param {*} query 
+     */
+    async fetch(query) {
+        return new Promise.resolve({ rows: [], total: 0 });
     }
 
-    update(rows) {
-        return this.model.Promise.resolve({ rows: [] });
+    /**
+     * Updates an array of data
+     * @param {Array} rows
+     * @returns {Promise}
+     */
+    async update(rows) {
+        return new Promise.resolve({ rows: [] });
     }
 
-    create(rows) {
-        return this.model.Promise.resolve({ rows: [] });
+    /**
+     * Creates a list of records.
+     * @param {Array} rows 
+     * @returns {Promise} List of records created.
+     */
+    async create(rows) {
+        return new Promise.resolve({ rows: [] });
     }
 
-    delete(rows) {
-        return this.model.Promise.resolve({ rows: [] });
+    /**
+     * Delete records by ids
+     * @param {Array} ids The records ids to delete.
+     * @returns {Promise}
+     */
+    async delete(rows) {
+        return new Promise.resolve({ rows: [] });
     }
 
 }
 
+/**
+ * Reference model implementation based on simple object arrays
+ * @extends ModelBase
+ */
 class ArrayModel extends ModelBase {
-    constructor(model) {
-        super(model);
-        this._data = this.model.options.data;
+    constructor(options) {
+        super(options);
+        this._data = this.options.data;
         this._connected = false;
     }
 
+    /**
+     * @returns {boolean} true when connected
+     * @override
+     */
     get isConnected() {
         return this._connected;
     }
 
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
     async connect(data) {
         return new Promise(resolve => {
             this._connected = true;
@@ -150,6 +206,12 @@ class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
     async disconnect(data) {
         return new Promise(resolve => {
             this._connected = false;
@@ -157,6 +219,12 @@ class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Fetches rows using where, order, start and limit query parameters
+     * @param {*} query An object containing a set of query definitions.
+     * @returns {Promise}
+     * @override
+     */
     async fetch({ where, orderby, start, limit }) {
         return new Promise(success => {
             let result = {
@@ -192,6 +260,12 @@ class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Updates rows provided by passing an object containing a "rows" array property.
+     * @param {*} data Object containing rows in a "rows" property
+     * @returns {Promise} Returns the provided data with the rows updated.
+     * @override
+     */
     async update(data) {
         return new Promise(success => {
             data.rows.forEach(row => {
@@ -208,6 +282,12 @@ class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Deletes all records matching the provided ids.
+     * @param {Array} ids 
+     * @returns {Promise}
+     * @override
+     */
     async delete(ids) {
         return new Promise(success => {
             ids.forEach((id) => {
@@ -223,6 +303,12 @@ class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Creates all the records provided. Returning the same records updated with their identifier.
+     * @param {Array} rows Array of records to create
+     * @returns {Promise}
+     * @override
+     */
     async create(rows) {
         return new Promise(success => {
             let lastId = this._data[this._data.length - 1].id;
@@ -258,6 +344,13 @@ class ArrayModel extends ModelBase {
  * })
  */
 class EventArgs {
+
+    /**
+     * 
+     * @param {string} eventName Event Name.
+     * @param {*} base EventHandler instance to trigger event in behalve of.
+     * @param {*} args Event arguments to pass during event trigger.
+     */
     constructor(eventName, base, args={}) {
         this._base = base;
         this.args = args;
@@ -295,25 +388,25 @@ class EventArgs {
 
 /**
  * A model facade class that encapsulates promise handling and connection management.
+ * @extends ModelBase
  */
-class ModelFacade extends EventEmitter {
+class ModelFacade extends ModelBase {
 
     /**
      * 
      * @param {*} options Model configuration
-     * @param {string} options.adapter Adapter to load
+     * @param {string} options.adapter Adapter to load or instantiate.
      */
     constructor(options) {
-        super();
+        super(options);
 
         this.options = Object.assign({
-            Promise
         }, options);
 
         if (typeof options.model == 'string') {
-            this._model = new require(options.model)(this);
+            this._model = new require(options.model)(options);
         } else {
-            this._model = new options.model(this);
+            this._model = new options.model(options);
         }
     }
 
@@ -327,20 +420,20 @@ class ModelFacade extends EventEmitter {
     async connect(data) {
         /**
          * Before connecting
-         * @event beforeConnect
+         * @event ModelFacade#beforeConnect
          * @type {EventArgs}
          */
         let beforeConnectEvent = new EventArgs('beforeConnect', this, {});
+
         /**
          * After connecting
-         * @event afterConnect
+         * @event ModelFacade#afterConnect
          * @type {EventArgs}
          */
-        let afterConnectEvent = new EventArgs('afterConnect', this, {});
 
         return beforeConnectEvent.wait(data)
             .then(data => this._model.connect(data))
-            .then(data => afterConnectEvent.wait(data))
+            .then(data => new EventArgs('afterConnect', this, {}).wait(data))
     }
 
     /**
@@ -353,25 +446,29 @@ class ModelFacade extends EventEmitter {
     async disconnect(data) {
         /**
          * Before disconnecting
-         * @event beforeDisconnect
+         * @event ModelFacade#beforeDisconnect
          * @type {EventArgs}
          */
         let beforeDisconnectEvent = new EventArgs('beforeDisconnect', this, {});
+
         /**
          * After disconnecting
-         * @event aftereDisconnect
+         * @event ModelFacade#aftereDisconnect
          * @type {EventArgs}
          */
-        let afterDisconnectEvent = new EventArgs('afterDisconnect', this, {});
 
         return beforeDisconnectEvent.wait(data)
             .then(data => this._model.disconnect(data))
-            .then(data => afterDisconnectEvent.wait(data))
+            .then(data => new EventArgs('afterDisconnect', this, {}).wait(data))
     }
 
     /**
-     * 
+     * Data fetch method. Accepts either a 'where' arrow function or more complex
+     * object containing where, orderby, start, limit options.
      * @param {*} query 
+     * @fires beforeFetch Before disconnecting event.
+     * @fires afterFetch After disconnecting event.
+     * @returns {Promise}
      */
     async fetch(query={}) {
 
@@ -385,7 +482,30 @@ class ModelFacade extends EventEmitter {
             chain = chain.then(query => this.connect(query));
         }
 
-        chain = chain.then(query => this._model.fetch(query));
+        /**
+         * Before fetch
+         * @event ModelFacade#beforeFetch
+         * @property {object} query Query object containing, where, orderby, start and limit properties.
+         * @property {function} query.where A where arrow function definition.
+         * @property {function} query.orderby A record order by definition arrow function.
+         * @property {int} query.start The record start index, used in pagination mostly.
+         * @property {int} query.limit The maximum number of records to return.
+         * @type {EventArgs}
+         */
+        let beforeFetchEvent = new EventArgs('beforeFetch', this, { query });
+
+        /**
+         * After fetch
+         * @event ModelFacade#afterFetch
+         * @property {object} result A query result object containing records fetched.
+         * @property {Array} result.rows Records fetched.
+         * @type {EventArgs}
+         */
+
+        chain = chain.then(query => beforeFetchEvent.wait(query))
+            .then(query => this._model.fetch(query))
+            .then(result => new EventArgs('afterFetch', this, { result }).wait(result));
+
         if (this.options.autoDisconnect) {
             chain = chain.then(this.disconnect);
         }
@@ -393,13 +513,38 @@ class ModelFacade extends EventEmitter {
         return chain;
     }
 
+    /**
+     * Updates an array of data
+     * @param {Array} rows
+     * @fires beforeUpdate Before disconnecting event.
+     * @fires afterUpdate After disconnecting event.
+     * @returns {Promise}
+     */
     async update(rows) {
         let chain = Promise.resolve(rows);
         if (!this._model.isConnected) {
             chain = chain.then(rows => this.connect(rows));
         }
 
-        chain = chain.then(rows => this._model.update(rows));
+        /**
+         * Before update
+         * @event ModelFacade#beforeUpdate
+         * @property { Array } rows Array of records to update.
+         * @type {EventArgs}
+         */
+        let beforeUpdateEvent = new EventArgs('beforeUpdate', this, { rows });
+
+        /**
+         * After update
+         * @event ModelFacade#afterUpdate
+         * @property { Array } rows Array of updated records.
+         * @type {EventArgs}
+         */
+
+        chain = chain.then(rows => beforeUpdateEvent.wait(rows))
+            .then(rows => this._model.update(rows))
+            .then(rows => new EventArgs('afterUpdate', this, { rows }).wait(rows));
+
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
         }
@@ -407,13 +552,38 @@ class ModelFacade extends EventEmitter {
         return chain;
     }
 
+    /**
+     * Creates a list of records.
+     * @param {Array} rows 
+     * @fires beforeCreate Before disconnecting event.
+     * @fires afterCreate After disconnecting event.
+     * @returns {Promise} List of records created.
+     */
     async create(rows) {
         let chain = Promise.resolve(rows);
         if (!this._model.isConnected) {
             chain = chain.then(rows => this.connect(rows));
         }
 
-        chain = chain.then(rows => this._model.create(rows));
+        /**
+         * Before create
+         * @event ModelFacade#beforeCreate
+         * @property {Array} rows Array of records to create.
+         * @type {EventArgs}
+         */
+        let beforeCreateEvent = new EventArgs('beforeCreate', this, { rows });
+
+        /**
+         * After create
+         * @event ModelFacade#aftereCreate
+         * @property {Array} rows Array of created records.
+         * @type {EventArgs}
+         */
+
+        chain = chain.then(rows => beforeCreateEvent.wait(rows))
+            .then(rows => this._model.create(rows))
+            .then(rows => new EventArgs('afterCreate', this, { rows }).wait(rows));
+
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
         }
@@ -421,6 +591,13 @@ class ModelFacade extends EventEmitter {
         return chain;
     }
 
+    /**
+     * Delete records by ids
+     * @param {Array} ids The records ids to delete.
+     * @fires beforeDelete Before disconnecting event.
+     * @fires afterDelete After disconnecting event.
+     * @returns {Promise}
+     */
     async delete(ids) {
         let chain = Promise.resolve(ids);
 
@@ -428,7 +605,25 @@ class ModelFacade extends EventEmitter {
             chain = chain.then(ids => this._model.connect(ids));
         }
 
-        chain = chain.then(ids => this._model.delete(ids));
+        /**
+         * Before delete
+         * @event ModelFacade#beforeDelete
+         * @property {Array} ids The record ids to delete.
+         * @type {EventArgs}
+         */
+        let beforeDeleteEvent = new EventArgs('beforeDelete', this, { ids });
+
+        /**
+         * After delete
+         * @event ModelFacade#aftereDelete
+         * @property {Array} ids The record ids deleted.
+         * @type {EventArgs}
+         */
+
+        chain = chain.then(ids => beforeDeleteEvent.wait(ids))
+            .then(ids => this._model.delete(ids))
+            .then(ids => new EventArgs('afterDelete', this, { ids }).wait(ids));
+
         if (this.options.autoDisconnect) {
             chain = chain.then(result => this.disconnect(result));
         }

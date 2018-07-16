@@ -11,6 +11,10 @@ const gulp = require('gulp');
 const mocha = require('gulp-mocha');
 const clear = require('clear');
 
+var child_exec = require('child_process').exec;
+
+const srcPaths = ['./src/**/*.js']
+
 gulp.task('build-umd', () => {
     return rollup.rollup({
         input: 'src/main.js',
@@ -70,12 +74,21 @@ gulp.task('test', ['build-umd', 'build-cjs-es'], () => {
     return gulp.src('./test/**/*.test.js', { read: false })
         .pipe(mocha({ 
             reporter: 'list' 
-        }));
+        }))
 });
+
+gulp.task('docs', ['build'], function(done) {
+    child_exec('node ./node_modules/jsdoc/jsdoc.js -c ./jsdoc.json', undefined, done);
+})
 
 gulp.task('build', ['build-umd', 'build-cjs-es', 'test']);
 
 gulp.task('watch', () => {
     clear();
     return gulp.watch(['src/**/*', 'test/**/*'], ['build']);
+});
+
+gulp.task('watch:docs', () => {
+    clear();
+    return gulp.watch(['src/**/*', 'test/**/*', 'README.md'], ['docs']);
 });

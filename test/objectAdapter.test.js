@@ -1,8 +1,9 @@
+require('source-map-support').install();
 // Import chai.
 let chai = require('chai'),
     path = require('path');
 
-let { createModel, asc, desc, ArrayModel } = require(path.join(__dirname, '..', 'dist', 'freak-orm.cjs'));
+let { createModel, asc, desc, ArrayModel } = require(path.join(__dirname, '..', 'dist', 'bloom-orm.cjs'));
 let sharedAdapterTests = require('./model.interface');
 
 // Tell chai that we'll be using the "should" style assertions.

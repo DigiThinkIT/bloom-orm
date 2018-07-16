@@ -1,17 +1,31 @@
 import { asc, desc, multiColSort } from '../queryUtils';
 import { ModelBase } from '../modelBase';
 
+/**
+ * Reference model implementation based on simple object arrays
+ * @extends ModelBase
+ */
 export class ArrayModel extends ModelBase {
-    constructor(model) {
-        super(model);
-        this._data = this.model.options.data;
+    constructor(options) {
+        super(options);
+        this._data = this.options.data;
         this._connected = false;
     }
 
+    /**
+     * @returns {boolean} true when connected
+     * @override
+     */
     get isConnected() {
         return this._connected;
     }
 
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
     async connect(data) {
         return new Promise(resolve => {
             this._connected = true;
@@ -19,6 +33,12 @@ export class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
     async disconnect(data) {
         return new Promise(resolve => {
             this._connected = false;
@@ -26,6 +46,12 @@ export class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Fetches rows using where, order, start and limit query parameters
+     * @param {*} query An object containing a set of query definitions.
+     * @returns {Promise}
+     * @override
+     */
     async fetch({ where, orderby, start, limit }) {
         return new Promise(success => {
             let result = {
@@ -63,6 +89,12 @@ export class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Updates rows provided by passing an object containing a "rows" array property.
+     * @param {*} data Object containing rows in a "rows" property
+     * @returns {Promise} Returns the provided data with the rows updated.
+     * @override
+     */
     async update(data) {
         return new Promise(success => {
             data.rows.forEach(row => {
@@ -79,6 +111,12 @@ export class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Deletes all records matching the provided ids.
+     * @param {Array} ids 
+     * @returns {Promise}
+     * @override
+     */
     async delete(ids) {
         return new Promise(success => {
             ids.forEach((id) => {
@@ -94,6 +132,12 @@ export class ArrayModel extends ModelBase {
         });
     }
 
+    /**
+     * Creates all the records provided. Returning the same records updated with their identifier.
+     * @param {Array} rows Array of records to create
+     * @returns {Promise}
+     * @override
+     */
     async create(rows) {
         return new Promise(success => {
             let lastId = this._data[this._data.length - 1].id;

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>models/array.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ArrayModel.html">ArrayModel</a><ul class='methods'><li data-type='method'><a href="ArrayModel.html#connect">connect</a></li><li data-type='method'><a href="ArrayModel.html#create">create</a></li><li data-type='method'><a href="ArrayModel.html#delete">delete</a></li><li data-type='method'><a href="ArrayModel.html#disconnect">disconnect</a></li><li data-type='method'><a href="ArrayModel.html#fetch">fetch</a></li><li data-type='method'><a href="ArrayModel.html#update">update</a></li></ul></li><li><a href="AsyncEvent.html">AsyncEvent</a><ul class='methods'><li data-type='method'><a href="AsyncEvent.html#await">await</a></li><li data-type='method'><a href="AsyncEvent.html#wait">wait</a></li></ul></li><li><a href="ModelBase.html">ModelBase</a><ul class='methods'><li data-type='method'><a href="ModelBase.html#connect">connect</a></li><li data-type='method'><a href="ModelBase.html#create">create</a></li><li data-type='method'><a href="ModelBase.html#delete">delete</a></li><li data-type='method'><a href="ModelBase.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelBase.html#fetch">fetch</a></li><li data-type='method'><a href="ModelBase.html#update">update</a></li></ul></li><li><a href="ModelProxy.html">ModelProxy</a><ul class='methods'><li data-type='method'><a href="ModelProxy.html#connect">connect</a></li><li data-type='method'><a href="ModelProxy.html#create">create</a></li><li data-type='method'><a href="ModelProxy.html#delete">delete</a></li><li data-type='method'><a href="ModelProxy.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelProxy.html#fetch">fetch</a></li><li data-type='method'><a href="ModelProxy.html#update">update</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="ModelProxy.html#event:afterConnect">afterConnect</a></li><li><a href="ModelProxy.html#event:aftereCreate">aftereCreate</a></li><li><a href="ModelProxy.html#event:aftereDelete">aftereDelete</a></li><li><a href="ModelProxy.html#event:aftereDisconnect">aftereDisconnect</a></li><li><a href="ModelProxy.html#event:afterFetch">afterFetch</a></li><li><a href="ModelProxy.html#event:afterUpdate">afterUpdate</a></li><li><a href="ModelProxy.html#event:beforeConnect">beforeConnect</a></li><li><a href="ModelProxy.html#event:beforeCreate">beforeCreate</a></li><li><a href="ModelProxy.html#event:beforeDelete">beforeDelete</a></li><li><a href="ModelProxy.html#event:beforeDisconnect">beforeDisconnect</a></li><li><a href="ModelProxy.html#event:beforeFetch">beforeFetch</a></li><li><a href="ModelProxy.html#event:beforeUpdate">beforeUpdate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#asc">asc</a></li><li><a href="global.html#desc">desc</a></li><li><a href="global.html#isArrowFunction">isArrowFunction</a></li><li><a href="global.html#multiColSort">multiColSort</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">models/array.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { asc, desc, multiColSort } from '../queryUtils';
+import { ModelBase } from '../modelBase';
+
+/**
+ * Reference model implementation based on simple object arrays
+ * @extends ModelBase
+ */
+export class ArrayModel extends ModelBase {
+    constructor(options) {
+        super(options);
+        this._data = this.options.data;
+        this._connected = false;
+    }
+
+    /**
+     * @returns {boolean} true when connected
+     * @override
+     */
+    get isConnected() {
+        return this._connected;
+    }
+
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
+    async connect(data) {
+        return new Promise(resolve => {
+            this._connected = true;
+            return resolve(data)
+        });
+    }
+
+    /**
+     * To simulate and stay api compliant, this model implements connecting/disconnecting behaviour.
+     * @param {*} data 
+     * @returns {Promise}
+     * @override
+     */
+    async disconnect(data) {
+        return new Promise(resolve => {
+            this._connected = false;
+            return resolve(data)
+        });
+    }
+
+    /**
+     * Fetches rows using where, order, start and limit query parameters
+     * @param {*} query An object containing a set of query definitions.
+     * @returns {Promise}
+     * @override
+     */
+    async fetch({ where, orderby, start, limit }) {
+        return new Promise(success => {
+            let result = {
+                rows: [],
+                total: 100
+            }
+
+            if (start === undefined) { start = 0 }
+            if (limit === undefined) { limit = 20 }
+
+            let count = 0;
+            for (let i = 0; i &lt; this._data.length; i++) {
+                let row = Object.assign({}, this._data[i]);
+
+                let matchCondition = where ? where(row) : true;
+                if (matchCondition) {
+                    result.rows.push(row);
+                }
+            }
+
+            let rowFields = {
+                id: 'id',
+                value: 'value',
+                description: 'description',
+                updated: 'updated'
+            }
+
+            if (orderby) {
+                result.rows = result.rows.sort(multiColSort(orderby(rowFields, asc, desc)));
+            }
+
+            result.rows = result.rows.slice(start, start + limit);
+
+            return success(result);
+        });
+    }
+
+    /**
+     * Updates rows provided by passing an object containing a "rows" array property.
+     * @param {*} data Object containing rows in a "rows" property
+     * @returns {Promise} Returns the provided data with the rows updated.
+     * @override
+     */
+    async update(data) {
+        return new Promise(success => {
+            data.rows.forEach(row => {
+
+                this._data.find((r, i) => {
+                    if (r.id == row.id) {
+                        this._data[i] = row;
+                        return true;
+                    }
+                })
+
+            });
+            return success(data);
+        });
+    }
+
+    /**
+     * Deletes all records matching the provided ids.
+     * @param {Array} ids 
+     * @returns {Promise}
+     * @override
+     */
+    async delete(ids) {
+        return new Promise(success => {
+            ids.forEach((id) => {
+                this._data.find((r, i) => {
+                    if (r.id == id) {
+                        this._data.splice(i, 1);
+                        return true;
+                    }
+                });
+            })
+
+            return success(ids);
+        });
+    }
+
+    /**
+     * Creates all the records provided. Returning the same records updated with their identifier.
+     * @param {Array} rows Array of records to create
+     * @returns {Promise}
+     * @override
+     */
+    async create(rows) {
+        return new Promise(success => {
+            let lastId = this._data[this._data.length - 1].id;
+            rows.forEach((row, i) => {
+                row.id = ++lastId;
+                this._data.push(row);
+            });
+
+            success({ rows });
+        });
+    }
+
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jul 16 2018 00:21:29 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

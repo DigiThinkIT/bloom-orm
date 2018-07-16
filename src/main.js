@@ -1,11 +1,11 @@
 import * as queryUtils from './queryUtils';
-export { Schema } from './schema';
-export { ModelBase } from './modelBase';
-export { ArrayModel } from './models/array';
-import { ModelFacade } from './modelFacade';
+import { Schema } from './schema';
+import { ModelBase } from './modelBase';
+import { ArrayModel } from './models/array';
+import { ModelProxy } from './modelProxy';
 
 export function createModel(options) {
-    return new ModelFacade(options);
+    return new ModelProxy(options);
 }
 
-export { ModelFacade, queryUtils };
+export { ModelProxy, queryUtils, Schema, ModelBase, ArrayModel };

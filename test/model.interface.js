@@ -5,7 +5,7 @@ let chai = require('chai'),
 chai.should();
 chai.use(require('chai-string'));
 
-let { queryUtils } = require(path.join(__dirname, '..', 'dist', 'freak-orm.umd'));
+let { queryUtils } = require(path.join(__dirname, '..', 'dist', 'bloom-orm.cjs'));
 let { asc, desc } = queryUtils;
 
 function modelProcess(result) {

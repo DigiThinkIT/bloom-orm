@@ -1,16 +1,18 @@
 {
-  "name": "freak-orm",
+  "name": "bloom-orm",
   "version": "1.0.0",
-  "description": "An orm layer for freak ui",
-  "main": "dist/freak-orm.cjs.js",
-  "module": "dist/freak-orm.esm.js",
-  "browser": "dist/freak-orm.umd.js",
+  "description": "An orm layer for bloom ui",
+  "main": "dist/bloom-orm.cjs.js",
+  "module": "dist/bloom-orm.esm.js",
+  "browser": "dist/bloom-orm.umd.js",
   "author": "Felipe Orellana<forellana@digithinkit.com>",
   "license": "MIT",
   "scripts": {
     "build": "yarn gulp build",
     "watch": "yarn gulp watch",
-    "test": "yarn gulp test"
+    "watch:docs": "yarn gulp watch:docs",
+    "test": "yarn gulp test",
+    "docs": "yarn gulp docs"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -21,9 +23,11 @@
     "chai": "^4.1.2",
     "chai-string": "^1.4.0",
     "clear": "^0.1.0",
+    "docdash": "^0.4.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.4.0",
     "gulp-mocha": "^6.0.0",
+    "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
     "rollup": "^0.62.0",
     "rollup-plugin-babel": "^3.0.7",

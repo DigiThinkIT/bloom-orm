@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Global - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ArrayModel.html">ArrayModel</a><ul class='methods'><li data-type='method'><a href="ArrayModel.html#connect">connect</a></li><li data-type='method'><a href="ArrayModel.html#create">create</a></li><li data-type='method'><a href="ArrayModel.html#delete">delete</a></li><li data-type='method'><a href="ArrayModel.html#disconnect">disconnect</a></li><li data-type='method'><a href="ArrayModel.html#fetch">fetch</a></li><li data-type='method'><a href="ArrayModel.html#update">update</a></li></ul></li><li><a href="AsyncEvent.html">AsyncEvent</a><ul class='methods'><li data-type='method'><a href="AsyncEvent.html#await">await</a></li><li data-type='method'><a href="AsyncEvent.html#wait">wait</a></li></ul></li><li><a href="ModelBase.html">ModelBase</a><ul class='methods'><li data-type='method'><a href="ModelBase.html#connect">connect</a></li><li data-type='method'><a href="ModelBase.html#create">create</a></li><li data-type='method'><a href="ModelBase.html#delete">delete</a></li><li data-type='method'><a href="ModelBase.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelBase.html#fetch">fetch</a></li><li data-type='method'><a href="ModelBase.html#update">update</a></li></ul></li><li><a href="ModelProxy.html">ModelProxy</a><ul class='methods'><li data-type='method'><a href="ModelProxy.html#connect">connect</a></li><li data-type='method'><a href="ModelProxy.html#create">create</a></li><li data-type='method'><a href="ModelProxy.html#delete">delete</a></li><li data-type='method'><a href="ModelProxy.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelProxy.html#fetch">fetch</a></li><li data-type='method'><a href="ModelProxy.html#update">update</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="ModelProxy.html#event:afterConnect">afterConnect</a></li><li><a href="ModelProxy.html#event:aftereCreate">aftereCreate</a></li><li><a href="ModelProxy.html#event:aftereDelete">aftereDelete</a></li><li><a href="ModelProxy.html#event:aftereDisconnect">aftereDisconnect</a></li><li><a href="ModelProxy.html#event:afterFetch">afterFetch</a></li><li><a href="ModelProxy.html#event:afterUpdate">afterUpdate</a></li><li><a href="ModelProxy.html#event:beforeConnect">beforeConnect</a></li><li><a href="ModelProxy.html#event:beforeCreate">beforeCreate</a></li><li><a href="ModelProxy.html#event:beforeDelete">beforeDelete</a></li><li><a href="ModelProxy.html#event:beforeDisconnect">beforeDisconnect</a></li><li><a href="ModelProxy.html#event:beforeFetch">beforeFetch</a></li><li><a href="ModelProxy.html#event:beforeUpdate">beforeUpdate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#asc">asc</a></li><li><a href="global.html#desc">desc</a></li><li><a href="global.html#isArrowFunction">isArrowFunction</a></li><li><a href="global.html#multiColSort">multiColSort</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Global</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+        
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="asc"><span class="type-signature"></span>asc<span class="signature">(col)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>This is the default implementation of a query ascending behaviour.
+Usually, custom models may replace this function generate their internal
+query language.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// used on a fetch query on some model.model.fetch({ orderby: r => asc(r.id) });</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>col</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The column to order in ascending order</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A comparison function to use between two objects</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="desc"><span class="type-signature"></span>desc<span class="signature">(col)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>This is the default implementation of a query descending behaviour.
+Usually, custom models may replace this function generate their internal
+query language.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// used on a fetch query on some model.model.fetch({ orderby: r => desc(r.id) });</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>col</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The column to order in descending order</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A comparison function to use between two objects</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isArrowFunction"><span class="type-signature"></span>isArrowFunction<span class="signature">(fn)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line76">line 76</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A value to test if is considered an arrow function.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true or false</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="multiColSort"><span class="type-signature"></span>multiColSort<span class="signature">(orderby)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="queryUtils.js.html">queryUtils.js</a>, <a href="queryUtils.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Helper function. It accumulates an array of asc or desc calls to implement
+multi column sorting for local stores. It is usually used internally and should
+not be used outside of building custom models.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// multi column sorting[ {a: 1, b:1},  {a:1, b: 2},  {a: 2, b:1},  {a: 2, b: 2}].sort(multiColSort([asc('a'), desc('b')]))// result:[ {a: 1, b: 2}, {a: 1, b: 1}, {a: 2, b: 2}, {a: 2, b: 1}]</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>orderby</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An array or single asc/desc function to accumulate</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A comparison function which combines the provided array of sort functions.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jul 16 2018 00:21:29 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
