@@ -23,7 +23,10 @@ gulp.task('build-umd', () => {
         plugins: [
             builtin(),
             sourcemaps(),
-            resolve(),
+            resolve({
+                browser: true,
+                preferBuiltins: true
+            }),
             commonjs(),
             babel({
                 exclude: 'node_modules/**' // only transpile our source code
@@ -46,10 +49,12 @@ gulp.task('build-umd', () => {
 gulp.task('build-cjs-es', () => {
     return rollup.rollup({
         input: 'src/main.js',
-        external: ['js-data-http'],
+        external: ['events'],
         plugins: [
             sourcemaps(),
-            resolve(),
+            resolve({
+                preferBuiltins: true
+            }),
             replace({
                 ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
             }),
@@ -75,7 +80,8 @@ gulp.task('build-cjs-es', () => {
 gulp.task('test', ['build-umd', 'build-cjs-es'], () => {
     return gulp.src('./test/**/*.test.js', { read: false })
         .pipe(mocha({ 
-            reporter: 'list' 
+            reporter: 'list', 
+            bail: true
         }))
 });
 

@@ -4,7 +4,7 @@ let chai = require('chai'),
     path = require('path');
 
 let { createModel, asc, desc, ArrayModel } = require(path.join(__dirname, '..', 'dist', 'bloom-orm.cjs'));
-let sharedAdapterTests = require('./model.interface');
+let sharedModelTests = require('./model.interface');
 
 // Tell chai that we'll be using the "should" style assertions.
 chai.should();
@@ -25,7 +25,8 @@ describe("Local Array Model", function () {
         // expose Array Model through context
         this.model = createModel({
             model: ArrayModel,
-            data: mockData.slice()
+            data: mockData.slice(),
+            primary_key: 'id'
         });
 
         // expose mock data through context
@@ -33,5 +34,5 @@ describe("Local Array Model", function () {
     });
 
     // use context to share test behaviours
-    sharedAdapterTests.shouldBehaveLikeAdapter();
+    sharedModelTests.shouldBehaveLikeModel();
 });

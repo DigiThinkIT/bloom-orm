@@ -15,10 +15,10 @@ export class ModelBase extends EventEmitter{
     }
 
     /**
-     * @returns true if connected.
+     * @returns {Promise} Resolves if connected else rejects.
      */
-    get isConnected() {
-        return false;
+    async isConnected() {
+        return Promise.reject();
     }
 
     /**

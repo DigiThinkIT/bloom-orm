@@ -5,7 +5,7 @@ import { ModelBase } from '../modelBase';
  * Reference model implementation based on simple object arrays
  * @extends ModelBase
  */
-export class ArrayModel extends ModelBase {
+export default class ArrayModel extends ModelBase {
     constructor(options) {
         super(options);
         this._data = this.options.data;
@@ -13,11 +13,14 @@ export class ArrayModel extends ModelBase {
     }
 
     /**
-     * @returns {boolean} true when connected
+     * @returns {Promise} Resolves if connected else rejects
      * @override
      */
-    get isConnected() {
-        return this._connected;
+    async isConnected(data) {
+        if ( this._connected ) {
+            return Promise.resolve(data);
+        }
+        return Promise.reject(false);
     }
 
     /**
@@ -49,6 +52,10 @@ export class ArrayModel extends ModelBase {
     /**
      * Fetches rows using where, order, start and limit query parameters
      * @param {*} query An object containing a set of query definitions.
+     * @param {function} query.where An arror function defining where operation(an arrow function is required)
+     * @param {function} query.orderby An arrow function defining sorting(an arrow function is required)
+     * @param {int} query.start Pagination start index
+     * @param {int} query.limit Pagination record length
      * @returns {Promise}
      * @override
      */

@@ -88,6 +88,14 @@ export class ModelProxy extends ModelBase {
         }
     }
 
+    get primaryKey() {
+        return this.options.primary_key;
+    }
+
+    async isConnected(data) {
+        return this._model.isConnected(data);
+    }
+
     /**
      * Connects the model to its backend.
      * @param {*} data Any object to pass along when Promise chained.
@@ -144,6 +152,10 @@ export class ModelProxy extends ModelBase {
      * Data fetch method. Accepts either a 'where' arrow function or more complex
      * object containing where, orderby, start, limit options.
      * @param {*} query 
+     * @param {function} query.where An arror function defining where operation(an arrow function is required)
+     * @param {function} query.orderby An arrow function defining sorting(an arrow function is required)
+     * @param {int} query.start Pagination start index
+     * @param {int} query.limit Pagination record length
      * @fires beforeFetch Before disconnecting event.
      * @fires afterFetch After disconnecting event.
      * @returns {Promise}
@@ -155,10 +167,18 @@ export class ModelProxy extends ModelBase {
             query = { where: query };
         }
 
-        let chain = Promise.resolve(query);
-        if (!this._model.isConnected) {
-            chain = chain.then(query => this.connect(query))
+        if ( !('limit' in query) ) {
+            query.limit = 20;
         }
+
+        if (!('start' in query)) {
+            query.start = 0;
+        }
+
+        let chain = this._model.isConnected(query)
+            .catch(() => {
+                return this.connect(query)
+            })
 
         /**
          * Before fetch
@@ -185,7 +205,7 @@ export class ModelProxy extends ModelBase {
             .then(result => new AsyncEvent('afterFetch', this, { result }).wait(result));
 
         if (this.options.autoDisconnect) {
-            chain = chain.then(this.disconnect);
+            chain = chain.then(result => this.disconnect(result));
         }
 
         return chain;
@@ -199,10 +219,11 @@ export class ModelProxy extends ModelBase {
      * @returns {Promise}
      */
     async update(rows) {
-        let chain = Promise.resolve(rows);
-        if (!this._model.isConnected) {
-            chain = chain.then(rows => this.connect(rows))
-        }
+        let chain = this._model.isConnected(rows)
+            .catch(() => {
+                return this.connect(rows)
+            })
+
 
         /**
          * Before update
@@ -238,10 +259,10 @@ export class ModelProxy extends ModelBase {
      * @returns {Promise} List of records created.
      */
     async create(rows) {
-        let chain = Promise.resolve(rows);
-        if (!this._model.isConnected) {
-            chain = chain.then(rows => this.connect(rows))
-        }
+        let chain = this._model.isConnected(rows)
+            .catch(() => {
+                return this.connect(rows)
+            })
 
         /**
          * Before create
@@ -277,11 +298,11 @@ export class ModelProxy extends ModelBase {
      * @returns {Promise}
      */
     async delete(ids) {
-        let chain = Promise.resolve(ids);
+        let chain = this._model.isConnected(ids)
+            .catch(() => {
+                return this.connect(ids)
+            })
 
-        if (!this._model.isConnected) {
-            chain = chain.then(ids => this._model.connect(ids))
-        }
 
         /**
          * Before delete

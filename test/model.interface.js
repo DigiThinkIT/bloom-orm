@@ -53,13 +53,17 @@ function eventTest(eventBase, rejectPromise, throwEventError, throwPromiseError)
     return stats;
 }
 
-exports.shouldBehaveLikeAdapter = function() {
+exports.shouldBehaveLikeModel = function() {
     describe('- Connect', function() {
 
         it('- connecting', function(done) {
-            this.model
-                .connect()
+            this.model.connect()
+                .then(() => this.model.isConnected())
                 .then(() => {
+                    done();
+                })
+                .catch(err => {
+                    expect(true, "Should never reach this code").to.be.false;
                     done();
                 })
         });
@@ -281,7 +285,7 @@ exports.shouldBehaveLikeAdapter = function() {
         it('- chained and update batch', function (done) {
             this.model
                 .fetch({
-                    where: r => (r.id > 5 && r.id < 50) || r.id == 1,
+                    where: r => (r.id > 5 && r.id < 50),
                     orderby: r => asc(r.value),
                     start: 0,
                     limit: 10
