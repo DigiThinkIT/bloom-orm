@@ -11,7 +11,9 @@ export class ModelBase extends EventEmitter{
      */
     constructor(options) {
         super();
-        this.options = options;
+        this.options = Object.assign({
+            primary_key: 'id'
+        }, options);
     }
 
     /**

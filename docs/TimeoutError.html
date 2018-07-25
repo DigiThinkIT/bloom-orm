@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>TimeoutError - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,56 +27,134 @@
 
 <div id="main">
     
+    <h1 class="page-title">TimeoutError</h1>
+    
 
     
 
 
 
+
+<section>
+
+<header>
+    
+        <h2>
+        TimeoutError
+        </h2>
+        
+            <div class="class-description"><p>A Timeout Error</p></div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="TimeoutError"><span class="type-signature"></span>new TimeoutError<span class="signature">()</span><span class="type-signature"></span></h4>
+
     
 
 
 
 
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="errors.js.html">errors.js</a>, <a href="errors.js.html#line4">line 4</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
     
+    </div>
 
+    
 
-    <section class="readme">
-        <article><h1>Bloom ORM</h1><p>A thin data model framework for BloomUI.</p>
-<p>This library encapsulates custom CRUD models into reusable interfaces for the BloomUI to use in its components.
-The idea is not to automate data quering or graphing. Instead models are created by hand by a real developer to take advantage of whatever backend datastore is required to get the job done. All models then expose six common methods to read, create, update or delete its data, wether the data is one or multiple tables on a mysql database or rest api is up to the developer implementing the model.</p>
-<h2>Model Common Methods</h2><ul>
-<li>connect: Gives the model a chance to connect to their store.</li>
-<li>disconnect: Lets a model disconnect from their store.</li>
-<li>create: Creates records im bulk.</li>
-<li>fetch: Fetch records in bulk.</li>
-<li>update: Update records in bulk.</li>
-<li>delete: Delete records by id in bulk.</li>
-</ul>
-<h2>Async Events</h2><p>Although models inherit EventDispatcher the event object passed provides a way to pause model method calls until long running event processes can take place:</p>
-<pre class="prettyprint source lang-javascript"><code>myModel.on('beforeConnect', (e) => {
-    e.await(myLongRunningProcessBeforeConnect);
-});
+    
 
-myModel.on('afterConnect', (e) => {
-    e.await(myLongRunningProcessAfterConnect);
-})
+    
 
-myModel.fetch(r => r.$id &lt; 100);</code></pre><p>Here the fetch call will pause until eventually both event promises resolve.</p>
-<h2>Promises</h2><p>All crud api calls return promises</p>
-<pre class="prettyprint source lang-javascript"><code>model.fetch(r => r.$id &lt; 100)
-    .then(result => result.rows.reduce((a, c) => a.concat(c[model.primaryKey]), [])
-    .then(ids => model.delete(ids));</code></pre><p>As well as being async capable(experimental)</p>
-<pre class="prettyprint source lang-javascript"><code>let results = await model.fetch(r => r.$id &lt; 100);
-await model.delete(result.rows.reduce(a, c) => a.concat(c[model.primaryKey]), []);
-</code></pre></article>
-    </section>
+     
 
+    
 
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

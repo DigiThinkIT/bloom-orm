@@ -8,9 +8,9 @@ chai.use(require('chai-string'));
 let { queryUtils } = require(path.join(__dirname, '..', 'dist', 'bloom-orm.cjs'));
 let { asc, desc } = queryUtils;
 
-function modelProcess(result) {
+function modelProcess(result, model) {
     result.rows.forEach((row, i) => {
-        row.description = `${row.id} : ${i}`;
+        row.description = `${row[model.primaryKey]} : ${i}`;
         row.updated = true;
     })
 
@@ -245,17 +245,17 @@ exports.shouldBehaveLikeModel = function() {
 
         it('- where', function (done) {
             this.model
-                .fetch(r => r.id == 1)
+                .fetch(r => r.$id == 1)
                 .then(result => {
                     expect(result.rows, `Total Records 1`).to.be.an('array').that.has.lengthOf(1);
                     expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.slice(1, 2));
                 })
-                .then(() => this.model.fetch(r => r.id > 5 && r.id < 10))
+                .then(() => this.model.fetch(r => r.$id > 5 && r.$id < 10))
                 .then(result => {
                     expect(result.rows, `Total Records 4`).to.be.an('array').that.has.lengthOf(4);
                     expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.slice(6, 10));
                 })
-                .then(() => this.model.fetch(r => r.id < 3))
+                .then(() => this.model.fetch(r => r.$id < 3))
                 .then(result => {
                     expect(result.rows, `Total Records 3`).to.be.an('array').that.has.lengthOf(3);
                     expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.slice(0, 3));
@@ -267,15 +267,15 @@ exports.shouldBehaveLikeModel = function() {
 
         it('- order by', function (done) {
             this.model
-                .fetch({ orderby: r => asc(r.id) })
+                .fetch({ orderby: r => asc(r.$id) })
                 .then(result => {
                     expect(result.rows, `Total Records 20`).to.be.an('array').that.has.lengthOf(20);
                     expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.slice(0, 20));
                 })
-                .then(() => this.model.fetch({ orderby: r => desc(r.id) }))
+                .then(() => this.model.fetch({ orderby: r => desc(r.$id) }))
                 .then(result => {
                     expect(result.rows, `Total Records 20`).to.be.an('array').that.has.lengthOf(20);
-                    expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.sort((a, b) => b.id - a.id).slice(0, 20));
+                    expect(result.rows, `Deep Test`).to.deep.equal(this.mockData.sort((a, b) => b[this.model.primaryKey] - a[this.model.primaryKey]).slice(0, 20));
                 })
                 .then(() => {
                     done();
@@ -285,15 +285,15 @@ exports.shouldBehaveLikeModel = function() {
         it('- chained and update batch', function (done) {
             this.model
                 .fetch({
-                    where: r => (r.id > 5 && r.id < 50),
+                    where: r => (r.$id > 5 && r.$id < 50),
                     orderby: r => asc(r.value),
                     start: 0,
                     limit: 10
                 })
-                .then(result => this.model.update(modelProcess(result)))
+                .then(result => this.model.update(modelProcess(result, this.model)))
                 .then(result => {
                     result.rows.forEach((r, i) => {
-                        expect(r.description, 'row description to start with id').to.startsWith(r.id.toString());
+                        expect(r.description, 'row description to start with id').to.startsWith(r[this.model.primaryKey].toString());
                         expect(r.updated, 'row updated to be true').to.be.valueOf(true);
                     });
                     expect(result.rows, 'rows to be on length 10').to.be.an('array').that.has.lengthOf(10);
@@ -321,14 +321,14 @@ exports.shouldBehaveLikeModel = function() {
 
     describe('- Delete', function() {
         it('- one', function (done) {
-            this.model.fetch({ where: r => r.id == 5 })
+            this.model.fetch({ where: r => r.$id == 5 })
                 .then(result => {
                     expect(result.rows).to.be.an('array').that.has.lengthOf(1);
                     expect(result.rows).to.deep.equal([this.mockData[5]]);
                     return result;
                 })
                 .then(() => this.model.delete([5]))
-                .then(() => this.model.fetch({ where: r => r.id == 5 }))
+                .then(() => this.model.fetch({ where: r => r.$id == 5 }))
                 .then(result => {
                     expect(result.rows).to.be.an('array').that.has.lengthOf(0);
                     expect(result.rows).to.deep.equal([]);
@@ -338,14 +338,14 @@ exports.shouldBehaveLikeModel = function() {
         });
 
         it('- many', function (done) {
-            this.model.fetch({ where: r => r.id >= 1 && r.id <= 10 })
+            this.model.fetch({ where: r => r.$id >= 1 && r.$id <= 10 })
                 .then(result => {
                     expect(result.rows).to.be.an('array').that.has.lengthOf(10);
                     expect(result.rows).to.deep.equal(this.mockData.slice(1, 11));
                     return result;
                 })
                 .then(() => this.model.delete([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
-                .then(() => this.model.fetch({ where: r => r.id >= 1 && r.id <= 10 }))
+                .then(() => this.model.fetch({ where: r => r.$id >= 1 && r.$id <= 10 }))
                 .then(result => {
                     expect(result.rows).to.be.an('array').that.has.lengthOf(0);
                     expect(result.rows).to.deep.equal([]);
@@ -368,7 +368,7 @@ exports.shouldBehaveLikeModel = function() {
                         updated: false,
                         description: 'I am new',
                         value: 1000,
-                        id: this.mockData.length
+                        [ this.model.primaryKey ]: this.mockData.length
                     }])
                 }).then(() => this.model.fetch({ where: r => r.value == 1000 }))
                 .then((result) => {
@@ -377,7 +377,7 @@ exports.shouldBehaveLikeModel = function() {
                         updated: false,
                         description: 'I am new',
                         value: 1000,
-                        id: this.mockData.length
+                        [ this.model.primaryKey ]: this.mockData.length
                     }])
                 })
                 .then(() => done());
@@ -403,17 +403,17 @@ exports.shouldBehaveLikeModel = function() {
                         updated: false,
                         description: 'I am new 1',
                         value: 1000,
-                        id: this.mockData.length
+                        [ this.model.primaryKey ]: this.mockData.length
                     }, {
                         updated: false,
                         description: 'I am new 2',
                         value: 2000,
-                        id: this.mockData.length + 1
+                        [ this.model.primaryKey ]: this.mockData.length + 1
                     }, {
                         updated: false,
                         description: 'I am new 3',
                         value: 3000,
-                        id: this.mockData.length + 2
+                        [ this.model.primaryKey ]: this.mockData.length + 2
                     }])
                 }).then(() => this.model.fetch({ 
                     where: r => r.value >= 1000 && r.value <= 3000 ,
@@ -425,17 +425,17 @@ exports.shouldBehaveLikeModel = function() {
                         updated: false,
                         description: 'I am new 1',
                         value: 1000,
-                        id: this.mockData.length
+                        [ this.model.primaryKey ]: this.mockData.length
                     }, {
                         updated: false,
                         description: 'I am new 2',
                         value: 2000,
-                        id: this.mockData.length + 1
+                        [ this.model.primaryKey ]: this.mockData.length + 1
                     }, {
                         updated: false,
                         description: 'I am new 3',
                         value: 3000,
-                        id: this.mockData.length + 2
+                        [ this.model.primaryKey ]: this.mockData.length + 2
                     }])
                 })
                 .then(() => done());

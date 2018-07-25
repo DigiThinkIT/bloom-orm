@@ -580,7 +580,9 @@
          */
         constructor(options) {
             super();
-            this.options = options;
+            this.options = Object.assign({
+                primary_key: 'id'
+            }, options);
         }
 
         /**
@@ -717,23 +719,29 @@
 
         /**
          * 
-         * @param {*} options Model configuration
-         * @param {string} options.adapter Adapter to load or instantiate.
+         * @param {object} options Model configuration
+         * @param {(constructor|string)} options.adapter Adapter constructor to load or instantiate.
+         * @param {string} options.primary_key The field name of the model's primary key (default: 'id')
+         * @param {object} options.schema A json schema object defining the fields of the model. Not all models require it as usually this would al ready exists for selfcontained models.
+         * @param {boolean} options.autoDisconnect If true, an extra call to disconnect() will be added to the promise chain.
          */
         constructor(options) {
             super(options);
 
-            this.options = Object.assign({}, options);
-
-            if (typeof options.model == 'string') {
-                this._model = new require(options.model)(options);
+            if (typeof this.options.model == 'string') {
+                this._model = new require(this.options.model)(options);
             } else {
-                this._model = new options.model(options);
+                this._model = new options.model(this.options);
             }
         }
 
         get primaryKey() {
             return this.options.primary_key;
+        }
+
+        recordDecorator(record) {
+            record.$id = record[this.options.primary_key];
+            return record;
         }
 
         async isConnected(data) {
@@ -791,14 +799,14 @@
         /**
          * Data fetch method. Accepts either a 'where' arrow function or more complex
          * object containing where, orderby, start, limit options.
-         * @param {*} query 
+         * @param {(function|object)} query Query arrow function or object containing query definition.
          * @param {function} query.where An arror function defining where operation(an arrow function is required)
          * @param {function} query.orderby An arrow function defining sorting(an arrow function is required)
          * @param {int} query.start Pagination start index
          * @param {int} query.limit Pagination record length
          * @fires beforeFetch Before disconnecting event.
          * @fires afterFetch After disconnecting event.
-         * @returns {Promise}
+         * @returns {Promise.<object>} When fulfilled promise returns: { rows: <Array>, total: <int> }
          */
         async fetch(query = {}) {
 
@@ -850,32 +858,40 @@
 
         /**
          * Updates an array of data
-         * @param {Array} rows
+         * @param {(object|Array)} data  object containing a 'rows' array key with records to update. You may also pass just an array of rows.
+         * @param {Array} data.rows  object containing a 'rows' array key with records to update. You may also pass just an array of rows.
          * @fires beforeUpdate Before disconnecting event.
          * @fires afterUpdate After disconnecting event.
-         * @returns {Promise}
+         * @returns {Promise.<object>} When fulfilled promise returns: { rows: <Array> }
          */
-        async update(rows) {
-            let chain = this._model.isConnected(rows).catch(() => {
-                return this.connect(rows);
+        async update(data) {
+
+            if (data.constructor == Array) {
+                data = { rows: data };
+            }
+
+            let chain = this._model.isConnected(data).catch(() => {
+                return this.connect(data);
             });
 
             /**
              * Before update
              * @event ModelProxy#beforeUpdate
-             * @property { Array } rows Array of records to update.
+             * @property { object } data 
+             * @property { Array } data.rows Array of records to update.
              * @type {AsyncEvent}
              */
-            let beforeUpdateEvent = new AsyncEvent('beforeUpdate', this, { rows });
+            let beforeUpdateEvent = new AsyncEvent('beforeUpdate', this, data);
 
             /**
              * After update
              * @event ModelProxy#afterUpdate
-             * @property { Array } rows Array of updated records.
+             * @property { object } data 
+             * @property { Array } data.rows Array of updated records.
              * @type {AsyncEvent}
              */
 
-            chain = chain.then(rows => beforeUpdateEvent.wait(rows)).then(rows => this._model.update(rows)).then(rows => new AsyncEvent('afterUpdate', this, { rows }).wait(rows));
+            chain = chain.then(data => beforeUpdateEvent.wait(data)).then(data => this._model.update(data)).then(data => new AsyncEvent('afterUpdate', this, data).wait(data));
 
             if (this.options.autoDisconnect) {
                 chain = chain.then(result => this.disconnect(result));
@@ -886,32 +902,40 @@
 
         /**
          * Creates a list of records.
-         * @param {Array} rows 
+         * @param {(object|Array)} data Either an Array of records or an object containing an Array key named 'rows'.
+         * @param {Array} data.rows Array containing records to create.
          * @fires beforeCreate Before disconnecting event.
          * @fires afterCreate After disconnecting event.
-         * @returns {Promise} List of records created.
+         * @returns {Promise.<object>} List of records created. Object signature: { rows: <Array> }
          */
-        async create(rows) {
-            let chain = this._model.isConnected(rows).catch(() => {
-                return this.connect(rows);
+        async create(data) {
+
+            if (data.constructor == Array) {
+                data = { rows: data };
+            }
+
+            let chain = this._model.isConnected(data).catch(() => {
+                return this.connect(data);
             });
 
             /**
              * Before create
              * @event ModelProxy#beforeCreate
-             * @property {Array} rows Array of records to create.
+             * @property {object} data Object with records to create.
+             * @property {Array} data.rows Records to create.
              * @type {AsyncEvent}
              */
-            let beforeCreateEvent = new AsyncEvent('beforeCreate', this, { rows });
+            let beforeCreateEvent = new AsyncEvent('beforeCreate', this, data);
 
             /**
              * After create
              * @event ModelProxy#aftereCreate
-             * @property {Array} rows Array of created records.
+             * @property {Array} data Object containing new records.
+             * @property {Array} data.rows Array of records created.
              * @type {AsyncEvent}
              */
 
-            chain = chain.then(rows => beforeCreateEvent.wait(rows)).then(rows => this._model.create(rows)).then(rows => new AsyncEvent('afterCreate', this, { rows }).wait(rows));
+            chain = chain.then(data => beforeCreateEvent.wait(data)).then(data => this._model.create(data)).then(data => new AsyncEvent('afterCreate', this, data).wait(data));
 
             if (this.options.autoDisconnect) {
                 chain = chain.then(result => this.disconnect(result));
@@ -925,7 +949,7 @@
          * @param {Array} ids The records ids to delete.
          * @fires beforeDelete Before disconnecting event.
          * @fires afterDelete After disconnecting event.
-         * @returns {Promise}
+         * @returns {Promise.<Array>} When fulfilled promise returns an array of deleted ids.
          */
         async delete(ids) {
             let chain = this._model.isConnected(ids).catch(() => {
@@ -935,7 +959,8 @@
             /**
              * Before delete
              * @event ModelProxy#beforeDelete
-             * @property {Array} ids The record ids to delete.
+             * @property {object} data 
+             * @property {Array} data.ids The record ids to delete.
              * @type {AsyncEvent}
              */
             let beforeDeleteEvent = new AsyncEvent('beforeDelete', this, { ids });
@@ -943,7 +968,8 @@
             /**
              * After delete
              * @event ModelProxy#aftereDelete
-             * @property {Array} ids The record ids deleted.
+             * @property {object} data
+             * @property {Array} data.ids The record ids deleted.
              * @type {AsyncEvent}
              */
 
@@ -1029,7 +1055,9 @@
                     limit = 20;
                 }
                 for (let i = 0; i < this._data.length; i++) {
-                    let row = Object.assign({}, this._data[i]);
+                    let row = Object.assign({
+                        $id: this._data[i][this.options.primary_key]
+                    }, this._data[i]);
 
                     let matchCondition = where ? where(row) : true;
                     if (matchCondition) {
@@ -1037,18 +1065,19 @@
                     }
                 }
 
-                let rowFields = {
-                    id: 'id',
-                    value: 'value',
-                    description: 'description',
-                    updated: 'updated'
-                };
+                let rowFields = Object.assign({
+                    $id: this.options.primary_key
+                }, this.options.schema.properties);
 
                 if (orderby) {
-                    result.rows = result.rows.sort(multiColSort(orderby(rowFields, asc, desc)));
+                    result.rows = result.rows.sort(multiColSort(orderby(rowFields)));
                 }
 
                 result.rows = result.rows.slice(start, start + limit);
+
+                result.rows.forEach(r => {
+                    delete r.$id;
+                });
 
                 return success(result);
             });
@@ -1102,15 +1131,15 @@
          * @returns {Promise}
          * @override
          */
-        async create(rows) {
+        async create(data) {
             return new Promise(success => {
                 let lastId = this._data[this._data.length - 1].id;
-                rows.forEach((row, i) => {
+                data.rows.forEach((row, i) => {
                     row.id = ++lastId;
                     this._data.push(row);
                 });
 
-                success({ rows });
+                success(data);
             });
         }
 
@@ -1204,7 +1233,9 @@
             this.cookies = {};
             this.fields = [];
             this.meta = {
-                fields: {}
+                fields: {
+                    $id: this.options.primary_key
+                }
             };
 
             this._http = this.options.http || axios.create({
@@ -1463,9 +1494,9 @@
          * @returns {Promise}
          * @override
          */
-        async create(rows) {
+        async create(data) {
             let promises = [];
-            rows.forEach(row => {
+            data.rows.forEach(row => {
                 let endPoint = this.getEndPoint('create', this.options, null, null, row);
                 promises.push(this.HTTP(endPoint).then(result => {
                     return result.data.data;

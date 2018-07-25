@@ -26,7 +26,17 @@ describe("Local Array Model", function () {
         this.model = createModel({
             model: ArrayModel,
             data: mockData.slice(),
-            primary_key: 'id'
+            primary_key: 'id',
+            schema: {
+                id: "/test/data",
+                type: "object",
+                properties: {
+                    udpated: { type: 'boolean' },
+                    description: { type: 'string' },
+                    value: { type: 'int' },
+                    id: { type: 'int' },
+                }
+            },
         });
 
         // expose mock data through context

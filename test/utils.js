@@ -9,9 +9,10 @@ const { MockRequestError } = require('../dist/bloom-orm.cjs').errors;
  * any of its api calls.
  */
 class MockRestAdapter extends EventHandler {
-    constructor() {
+    constructor(debug) {
         super();
 
+        this._debug = debug;
         this._requestHandlers = [];
         this._requests = [];
     }
@@ -57,6 +58,11 @@ class MockRestAdapter extends EventHandler {
             },
             promise: null
         }, opts);
+
+        if (this._debug) {
+            console.log("--- REQUEST:");
+            console.log(JSON.stringify(req, null, '  '));
+        }
 
         req.promise = new Promise((resolve, reject) => {
             req.request.resolve = resolve;
@@ -177,8 +183,12 @@ class MockRestAdapter extends EventHandler {
      * @returns {Promise} Promise fullfilled when all processed requests have finished.
      */
     start(timeout=5) {
-        this._autoPromise = this.wait(Infinity, timeout, Infinity);
-        return this._autoPromise;
+        if ( !this._autoPromise ) {
+            this._autoPromise = this.wait(Infinity, timeout, Infinity);
+            return this._autoPromise;
+        } else {
+            return this._autoPromise;
+        }
     }
 
     /**
@@ -187,7 +197,10 @@ class MockRestAdapter extends EventHandler {
      */
     stop() {
         this._stoped = true;
-        return this._autoPromise;
+        return this._autoPromise.then(r => {
+            this._autoPromise = null;
+            return r;
+        });
     }
 
     /**

@@ -71,7 +71,9 @@ export default class ArrayModel extends ModelBase {
 
             let count = 0;
             for (let i = 0; i < this._data.length; i++) {
-                let row = Object.assign({}, this._data[i]);
+                let row = Object.assign({
+                    $id: this._data[i][this.options.primary_key]
+                }, this._data[i]);
 
                 let matchCondition = where ? where(row) : true;
                 if (matchCondition) {
@@ -79,18 +81,19 @@ export default class ArrayModel extends ModelBase {
                 }
             }
 
-            let rowFields = {
-                id: 'id',
-                value: 'value',
-                description: 'description',
-                updated: 'updated'
-            }
+            let rowFields = Object.assign({
+                $id: this.options.primary_key
+            }, this.options.schema.properties);
 
             if (orderby) {
-                result.rows = result.rows.sort(multiColSort(orderby(rowFields, asc, desc)));
+                result.rows = result.rows.sort(multiColSort(orderby(rowFields)));
             }
 
             result.rows = result.rows.slice(start, start + limit);
+
+            result.rows.forEach(r => {
+                delete r.$id;
+            });
 
             return success(result);
         });
@@ -145,15 +148,15 @@ export default class ArrayModel extends ModelBase {
      * @returns {Promise}
      * @override
      */
-    async create(rows) {
+    async create(data) {
         return new Promise(success => {
             let lastId = this._data[this._data.length - 1].id;
-            rows.forEach((row, i) => {
+            data.rows.forEach((row, i) => {
                 row.id = ++lastId;
                 this._data.push(row);
             });
 
-            success({ rows });
+            success(data);
         });
     }
 

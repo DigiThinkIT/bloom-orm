@@ -21,8 +21,7 @@ for (let i = 0; i < 100; i++) {
         updated: false,
         description: "",
         value: i % 10,
-        id: i,
-        name: i.toString()
+        name: i
     });
 }
 
@@ -42,8 +41,7 @@ describe("Frappe Rest API Model", function () {
                     udpated: { type: 'boolean' },
                     description: { type: 'string' },
                     value: { type: 'int' },
-                    id: { type: 'int' },
-                    name: { type: 'string' }
+                    name: { type: 'int' }
                 }
             },
             debug: false,
@@ -76,7 +74,7 @@ describe("Frappe Rest API Model", function () {
 
         this.mockRest.onRequest('delete', /api\/resource\/MockObject\/(.*)\/?/i, (req) => {
             let id = parseInt(req.request.urlMatches[1]);
-            let idx = this.serverkData.findIndex(r => r.id == id);
+            let idx = this.serverkData.findIndex(r => r.name == id);
             if ( idx > -1 ) {
                 this.serverkData.splice(idx, 1);
 
@@ -94,7 +92,7 @@ describe("Frappe Rest API Model", function () {
 
         this.mockRest.onRequest('put', /api\/resource\/MockObject\/(.*)\/?/i, (req) => {
 
-            let idx = this.serverkData.findIndex(r => r.id == req.data.id );
+            let idx = this.serverkData.findIndex(r => r.name == req.data.name );
             this.serverkData[idx] = req.data;
 
             return {
@@ -105,9 +103,9 @@ describe("Frappe Rest API Model", function () {
 
         this.mockRest.onRequest('post', /api\/resource\/MockObject\/?/i, (req) => {
             let row = req.data;
-            let lastId = this.serverkData[this.serverkData.length - 1].id;
+            let lastId = this.serverkData[this.serverkData.length - 1].name;
 
-            row.id = ++lastId;
+            row.name = ++lastId;
             this.serverkData.push(row);
 
             return {
@@ -130,12 +128,12 @@ describe("Frappe Rest API Model", function () {
 
             let results = this.serverkData.slice();
 
-            if ( req.request.query.order_by == '"id DESC"') {
-                results = results.sort(desc('id'));
+            if ( req.request.query.order_by == '"name DESC"') {
+                results = results.sort(desc('name'));
             }
 
-            if (req.request.query.order_by == '"id ASC"') {
-                results = results.sort(asc('id'));
+            if (req.request.query.order_by == '"name ASC"') {
+                results = results.sort(asc('name'));
             }
 
             if (req.request.query.order_by == '"value ASC"') {
@@ -160,45 +158,45 @@ describe("Frappe Rest API Model", function () {
                 }, []);;
             }
 
-            if ( req.request.query.filters == '[["id", "==", 1]]') {
+            if ( req.request.query.filters == '[["name", "==", 1]]') {
                 results = results.reduce((c, row) => {
-                        if ( row.id == 1 ) {
+                        if ( row.name == 1 ) {
                             c.push(row);
                         }
                         return c;
                     }, []);;
             }
 
-            if (req.request.query.filters == '[["id", "<", 3]]') {
+            if (req.request.query.filters == '[["name", "<", 3]]') {
                 results = results.reduce((c, row) => {
-                    if (row.id < 3) {
+                    if (row.name < 3) {
                         c.push(row);
                     }
                     return c;
                 }, []);;
             }
 
-            if (req.request.query.filters == '[["id", ">=", 1], ["id", "<=", 10]]') {
+            if (req.request.query.filters == '[["name", ">=", 1], ["name", "<=", 10]]') {
                 results = results.reduce((c, row) => {
-                    if (row.id >= 1 && row.id <= 10) {
+                    if (row.name >= 1 && row.name <= 10) {
                         c.push(row);
                     }
                     return c;
                 }, []);;
             }
 
-            if (req.request.query.filters == '[["id", "==", 5]]') {
+            if (req.request.query.filters == '[["name", "==", 5]]') {
                 results = results.reduce((c, row) => {
-                    if (row.id == 5) {
+                    if (row.name == 5) {
                         c.push(row);
                     }
                     return c;
                 }, []);;
             }
 
-            if (req.request.query.filters == '[["id", ">", 5], ["id", "<", 10]]') {
+            if (req.request.query.filters == '[["name", ">", 5], ["name", "<", 10]]') {
                 results = results.reduce((c, row) => {
-                    if (row.id > 5 && row.id < 10) {
+                    if (row.name > 5 && row.name < 10) {
                         c.push(row);
                     }
                     return c;
@@ -236,11 +234,13 @@ describe("Frappe Rest API Model", function () {
         let onConnect = sinon.spy();
         let p = this.model.connect();
         p.then(onConnect);
-
-        this.mockRest.wait(1).then(() => {
-            expect(onConnect.called).to.be.true;
-            done();
-        });
+        p.then(() => {
+                expect(onConnect.called).to.be.true;
+                done();
+            })
+            .catch(() => {
+                expect(true, "Should never reach here").to.be.false;
+            });
     })
 
     it("- Fetch", function(done) {
@@ -253,11 +253,13 @@ describe("Frappe Rest API Model", function () {
         });
 
         p.then(onFetch);
+        p.then(() => { 
+                expect(onFetch.called).to.be.true;
+                done();
+            })
+            .catch(() => {
+                expect(true, "Should never reach here").to.be.false;
+            });
         
-        // wait for 4 requests: login, fetch, fetch count, logout
-        this.mockRest.wait(4).then(() => {
-            expect(onFetch.called).to.be.true;
-            done();
-        })
     })
 });

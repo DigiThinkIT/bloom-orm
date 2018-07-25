@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>models/frappeDoctype.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AsyncEvent.html">AsyncEvent</a><ul class='methods'><li data-type='method'><a href="AsyncEvent.html#await">await</a></li><li data-type='method'><a href="AsyncEvent.html#wait">wait</a></li></ul></li><li><a href="ModelBase.html">ModelBase</a><ul class='methods'><li data-type='method'><a href="ModelBase.html#connect">connect</a></li><li data-type='method'><a href="ModelBase.html#create">create</a></li><li data-type='method'><a href="ModelBase.html#delete">delete</a></li><li data-type='method'><a href="ModelBase.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelBase.html#fetch">fetch</a></li><li data-type='method'><a href="ModelBase.html#isConnected">isConnected</a></li><li data-type='method'><a href="ModelBase.html#update">update</a></li></ul></li><li><a href="ModelProxy.html">ModelProxy</a><ul class='methods'><li data-type='method'><a href="ModelProxy.html#connect">connect</a></li><li data-type='method'><a href="ModelProxy.html#create">create</a></li><li data-type='method'><a href="ModelProxy.html#delete">delete</a></li><li data-type='method'><a href="ModelProxy.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelProxy.html#fetch">fetch</a></li><li data-type='method'><a href="ModelProxy.html#isConnected">isConnected</a></li><li data-type='method'><a href="ModelProxy.html#update">update</a></li></ul></li><li><a href="module.exports.html">exports</a><ul class='methods'><li data-type='method'><a href="module.exports.html#connect">connect</a></li><li data-type='method'><a href="module.exports.html#create">create</a></li><li data-type='method'><a href="module.exports.html#delete">delete</a></li><li data-type='method'><a href="module.exports.html#disconnect">disconnect</a></li><li data-type='method'><a href="module.exports.html#fetch">fetch</a></li><li data-type='method'><a href="module.exports.html#isConnected">isConnected</a></li><li data-type='method'><a href="module.exports.html#update">update</a></li></ul></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Events</h3><ul><li><a href="ModelProxy.html#event:afterConnect">afterConnect</a></li><li><a href="ModelProxy.html#event:aftereCreate">aftereCreate</a></li><li><a href="ModelProxy.html#event:aftereDelete">aftereDelete</a></li><li><a href="ModelProxy.html#event:aftereDisconnect">aftereDisconnect</a></li><li><a href="ModelProxy.html#event:afterFetch">afterFetch</a></li><li><a href="ModelProxy.html#event:afterUpdate">afterUpdate</a></li><li><a href="ModelProxy.html#event:beforeConnect">beforeConnect</a></li><li><a href="ModelProxy.html#event:beforeCreate">beforeCreate</a></li><li><a href="ModelProxy.html#event:beforeDelete">beforeDelete</a></li><li><a href="ModelProxy.html#event:beforeDisconnect">beforeDisconnect</a></li><li><a href="ModelProxy.html#event:beforeFetch">beforeFetch</a></li><li><a href="ModelProxy.html#event:beforeUpdate">beforeUpdate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#asc">asc</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#delete">delete</a></li><li><a href="global.html#desc">desc</a></li><li><a href="global.html#disconnect">disconnect</a></li><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#isArrowFunction">isArrowFunction</a></li><li><a href="global.html#isConnected">isConnected</a></li><li><a href="global.html#multiColSort">multiColSort</a></li><li><a href="global.html#Timeout">Timeout</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">models/frappeDoctype.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import RestModel from './rest';
+import { ExpressionBuilder } from '../expressions';
+import FrappeRestQueryAstTransform from '../astTransforms/frappe';
+import { RemoteError, UnexpectedResponseError } from '../errors';
+
+/**
+ * A generic model which wraps Frappe's REST api for their Doctypes.
+ */
+export default class FrappeDoctypeModel extends RestModel {
+
+    constructor(options) {
+        super(Object.assign({
+        }, options));
+    }
+
+    getEndPoint(action, options, id, args, data) {
+        let argStr = '';
+        if (action == 'fetch') {
+            let tmpArgs = [];
+            for (var k in args) {
+                if ( args[k] !== undefined ) {
+                    tmpArgs.push(`${k}=${encodeURIComponent(args[k])}`);
+                }
+            }
+            argStr = tmpArgs.join('&amp;');
+        }
+
+        let ACTIONS = {
+            connect: {
+                url: `${options.baseUrl}/api/method/login?usr=${encodeURIComponent(options.auth.usr)}&amp;pwd=${encodeURIComponent(options.auth.pwd)}`,
+                method: 'get'
+            },
+            disconnect: {
+                url: `${options.baseUrl}/api/method/logout`,
+                method: 'get'
+            },
+            fetch: {
+                url: `${options.baseUrl}/api/resource/${encodeURIComponent(options.resource)}${id ? '/' + id : ''}${argStr ? '?' + argStr : ''}`,
+                method: 'get'
+            },
+            create: {
+                url: `${options.baseUrl}/api/resource/${encodeURIComponent(options.resource)}`,
+                method: 'post',
+                data
+            },
+            update: {
+                url: `${options.baseUrl}/api/resource/${encodeURIComponent(options.resource)}/${id}`,
+                method: 'put',
+                data
+            },
+            delete: {
+                url: `${options.baseUrl}/api/resource/${encodeURIComponent(options.resource)}/${id}`,
+                method: 'delete',
+            },
+            method: {
+                url: `${options.baseUrl}/api/method/${id}`,
+                method: 'get'
+            },
+            default: {
+                url: `${options.baseUrl}`,
+                method: 'get'
+            }
+
+        }
+
+        return action in ACTIONS ? ACTIONS[action] : ACTIONS.default;
+    }
+
+    handleFrappeErrors(response, label) {
+        let rx = /(?:\&lt;pre\>)([^&lt;]+)(?:\&lt;\/pre\>)/ig;
+        let matches = rx.exec(response.data);
+        let remoteTrace = matches[1].trim().split("\n");
+        let msg = remoteTrace[remoteTrace.length - 1];
+        throw new RemoteError((this.options.name || 'Frappe') + (label?`[${label}]`:''), msg, remoteTrace);
+    }
+
+    async isConnected(data) {
+        let endPoint = this.getEndPoint('method', this.options, 'frappe.auth.get_logged_user');
+        return this.HTTP(endPoint).then(response => {
+                if (response.status == 200) {
+                    return data;
+                } else {
+                    throw new Error(response.status);
+                }
+            });
+    }
+
+    async fetch({where, orderby, start, limit}) {
+
+        let filters,
+            order_by,
+            fields=JSON.stringify(this.fields),
+            builder = new ExpressionBuilder({
+                transform: new FrappeRestQueryAstTransform({
+                    r: this.meta.fields
+                })
+            }),
+            orderBuilder = new ExpressionBuilder({
+                transform: new FrappeRestQueryAstTransform({
+                    r: this.meta.fields
+                }, {
+                    allowArrayExpression: true,
+                    allowLogicalOperators: false,
+                    allowBinaryOperators: false,
+                    finalize(output) {
+                        return JSON.stringify(output);
+                    }
+                })
+            });
+
+        if ( where ) {
+            filters = builder.parse(where).transform();
+        }
+
+        if ( orderby ) {
+            order_by = orderBuilder.parse(orderby).transform();
+        }
+
+        let fetchArgs = {
+            fields,
+            filters,
+            order_by,
+            limit_start: start,
+            limit_page_length: limit
+        };
+        let fetchEndPoint = this.getEndPoint('fetch', this.options, null, fetchArgs);
+
+        let totalArgs = {
+            fields: JSON.stringify(["count(*) as total"]),
+            filters,
+            order_by
+        };
+        let totalEndPoint = this.getEndPoint('fetch', this.options, null, totalArgs);
+        return Promise.all([
+            this.HTTP(fetchEndPoint),
+            this.HTTP(totalEndPoint)])
+            .then(responses => {
+                let fetchResponse = responses[0],
+                    totalResponse = responses[1],
+                    result = {
+                        rows: null,
+                        total: 0
+                    };
+
+                // fetch results
+                if (fetchResponse.status == 200) {
+                    if (typeof fetchResponse.data != 'object') {
+                        // something went wrong, needle could not parse returned json
+                        throw new UnexpectedResponseError(this.name || "Frappe", fetchResponse.body, "Could not parse response from service");
+                    }
+
+                    result.rows = fetchResponse.data.data;
+                } else {
+                    this.handleFrappeErrors(fetchResponse, "Error while parsing fetch row results.");
+                }
+
+                // fetch query count
+                if (totalResponse.status == 200) {
+                    if (typeof totalResponse.data != 'object') {
+                        // something went wrong, needle could not parse returned json
+                        throw new UnexpectedResponseError(this.name || "Frappe", totalResponse.body, "Could not parse response from service");
+                    }
+
+                    result.total = totalResponse.data.data[0].total
+                } else {
+                    this.handleFrappeErrors(totalResponse, "Error while parsing fetch total results.");
+                }
+
+                return result;
+            });
+    }
+
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jul 25 2018 16:38:33 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

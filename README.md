@@ -3,9 +3,9 @@
 A thin data model framework for BloomUI.
 
 This library encapsulates custom CRUD models into reusable interfaces for the BloomUI to use in its components.
-The idea is not to automate data quering or graphing. Instead models are created by hand by a real developer to take advantage of whatever backend datastore is required to get the job done. All models then expose 4 common methods to read, create, update or delete its data, wether the data is one or multiple tables on a mysql database or rest api is up to the developer implementing the model.
+The idea is not to automate data quering or graphing. Instead models are created by hand by a real developer to take advantage of whatever backend datastore is required to get the job done. All models then expose six common methods to read, create, update or delete its data, wether the data is one or multiple tables on a mysql database or rest api is up to the developer implementing the model.
 
-## Six Common Methods
+## Model Common Methods
 
 - connect: Gives the model a chance to connect to their store.
 - disconnect: Lets a model disconnect from their store.
@@ -27,7 +27,7 @@ myModel.on('afterConnect', (e) => {
     e.await(myLongRunningProcessAfterConnect);
 })
 
-myModel.fetch(r => r.id < 100);
+myModel.fetch(r => r.$id < 100);
 ```
 Here the fetch call will pause until eventually both event promises resolve.
 
@@ -37,16 +37,16 @@ Here the fetch call will pause until eventually both event promises resolve.
 All crud api calls return promises
 
 ```javascript
-model.fetch(r => r.id < 100)
-    .then(result => result.rows.reduce((a, c) => a.concat(c.id), [])
+model.fetch(r => r.$id < 100)
+    .then(result => result.rows.reduce((a, c) => a.concat(c[model.primaryKey]), [])
     .then(ids => model.delete(ids));
 ```
 
 As well as being async capable(experimental)
 
 ```javascript
-let results = await model.fetch(r => r.id < 100);
-await model.delete(result.rows.reduce(a, c) => a.concat(c.id), []);
+let results = await model.fetch(r => r.$id < 100);
+await model.delete(result.rows.reduce(a, c) => a.concat(c[model.primaryKey]), []);
 
 ```
 
