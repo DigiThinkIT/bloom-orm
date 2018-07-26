@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrappeDoctypeModel - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AsyncEvent.html">AsyncEvent</a><ul class='methods'><li data-type='method'><a href="AsyncEvent.html#await">await</a></li><li data-type='method'><a href="AsyncEvent.html#wait">wait</a></li></ul></li><li><a href="FrappeDoctypeModel.html">FrappeDoctypeModel</a><ul class='methods'><li data-type='method'><a href="FrappeDoctypeModel.html#fetch">fetch</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#fetch">fetch</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#getEndPoint">getEndPoint</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#getEndPoint">getEndPoint</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#handleFrappeErrors">handleFrappeErrors</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#handleFrappeErrors">handleFrappeErrors</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#isConnected">isConnected</a></li><li data-type='method'><a href="FrappeDoctypeModel.html#isConnected">isConnected</a></li></ul></li><li><a href="FrappeDoctypeModel_FrappeDoctypeModel.html">FrappeDoctypeModel</a></li><li><a href="ModelBase.html">ModelBase</a><ul class='methods'><li data-type='method'><a href="ModelBase.html#connect">connect</a></li><li data-type='method'><a href="ModelBase.html#create">create</a></li><li data-type='method'><a href="ModelBase.html#delete">delete</a></li><li data-type='method'><a href="ModelBase.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelBase.html#fetch">fetch</a></li><li data-type='method'><a href="ModelBase.html#isConnected">isConnected</a></li><li data-type='method'><a href="ModelBase.html#update">update</a></li></ul></li><li><a href="ModelProxy.html">ModelProxy</a><ul class='methods'><li data-type='method'><a href="ModelProxy.html#connect">connect</a></li><li data-type='method'><a href="ModelProxy.html#create">create</a></li><li data-type='method'><a href="ModelProxy.html#delete">delete</a></li><li data-type='method'><a href="ModelProxy.html#disconnect">disconnect</a></li><li data-type='method'><a href="ModelProxy.html#fetch">fetch</a></li><li data-type='method'><a href="ModelProxy.html#isConnected">isConnected</a></li><li data-type='method'><a href="ModelProxy.html#update">update</a></li></ul></li><li><a href="module.exports.html">exports</a><ul class='methods'><li data-type='method'><a href="module.exports.html#connect">connect</a></li><li data-type='method'><a href="module.exports.html#create">create</a></li><li data-type='method'><a href="module.exports.html#delete">delete</a></li><li data-type='method'><a href="module.exports.html#disconnect">disconnect</a></li><li data-type='method'><a href="module.exports.html#fetch">fetch</a></li><li data-type='method'><a href="module.exports.html#isConnected">isConnected</a></li><li data-type='method'><a href="module.exports.html#update">update</a></li></ul></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Events</h3><ul><li><a href="ModelProxy.html#event:afterConnect">afterConnect</a></li><li><a href="ModelProxy.html#event:aftereCreate">aftereCreate</a></li><li><a href="ModelProxy.html#event:aftereDelete">aftereDelete</a></li><li><a href="ModelProxy.html#event:aftereDisconnect">aftereDisconnect</a></li><li><a href="ModelProxy.html#event:afterFetch">afterFetch</a></li><li><a href="ModelProxy.html#event:afterUpdate">afterUpdate</a></li><li><a href="ModelProxy.html#event:beforeConnect">beforeConnect</a></li><li><a href="ModelProxy.html#event:beforeCreate">beforeCreate</a></li><li><a href="ModelProxy.html#event:beforeDelete">beforeDelete</a></li><li><a href="ModelProxy.html#event:beforeDisconnect">beforeDisconnect</a></li><li><a href="ModelProxy.html#event:beforeFetch">beforeFetch</a></li><li><a href="ModelProxy.html#event:beforeUpdate">beforeUpdate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#asc">asc</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#delete">delete</a></li><li><a href="global.html#desc">desc</a></li><li><a href="global.html#disconnect">disconnect</a></li><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#isArrowFunction">isArrowFunction</a></li><li><a href="global.html#isConnected">isConnected</a></li><li><a href="global.html#multiColSort">multiColSort</a></li><li><a href="global.html#Timeout">Timeout</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">FrappeDoctypeModel</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="FrappeDoctypeModel.html">FrappeDoctypeModel</a>#</span>
+        
+        FrappeDoctypeModel
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="FrappeDoctypeModel"><span class="type-signature"></span>new FrappeDoctypeModel<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="models_frappeDoctype.js.html">models/frappeDoctype.js</a>, <a href="models_frappeDoctype.js.html#line18">line 18</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="FrappeDoctypeModel.html">FrappeDoctypeModel</a>#</span>
+        
+        FrappeDoctypeModel
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="FrappeDoctypeModel"><span class="type-signature"></span>new FrappeDoctypeModel<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="models_frappeDoctype.js.html">models/frappeDoctype.js</a>, <a href="models_frappeDoctype.js.html#line18">line 18</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jul 26 2018 08:03:53 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

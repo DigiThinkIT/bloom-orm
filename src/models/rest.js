@@ -2,57 +2,14 @@ import { asc, desc, multiColSort } from '../queryUtils';
 import { ModelBase } from '../modelBase';
 import { Schema } from '../schema';
 import { RemoteError } from '../errors';
+import { leftPadLines, normalizeField, capitalize } from '../utils';
 const axios = require('axios');
-
-let RestOptionsSchema = new Schema({
-    id: '/RestModelOptions',
-    type: 'object',
-    'properties': {
-        'baseUrl': { 'type': 'string' },
-        'getEndPoint': { 'type': 'function' },
-        'connect': { 'type': 'function' },
-        'disconnect': { 'type': 'function' },
-        'serializer': { 'type': 'function' },
-        'deserializer': { 'type': 'function' }
-    }
-});
-
-export function leftPadLines(lines, padding, skip=0) {
-    lines = JSON.stringify(lines, null, 4).trim().split("\n");
-
-    return lines.reduce((c, v, i) => {
-        if ( i <= skip ) {
-            return c + v;
-        } else {
-            return c + "\n" + Array(padding).join(" ") + v;
-        }
-    }, '')
-}
-
-export function capitalize(value, skip) {
-    if ( value.constructor !== Array ) {
-        value = [value];
-    }
-
-    return value.reduce((c, v, i) => {
-        if ( i <= skip ) {
-            c.push(v);
-        } else {
-            c.push(v.charAt(0).toUpperCase() + v.slice(1));
-        }
-        return c;
-    }, []);
-}
-
-export function normalizeField(value) {
-    return capitalize(value.split(' '), 1).join('');
-}
 
 /**
  * A generic and extensible Rest model.
  * @extends ModelBase
  */
-export default class RestModel extends ModelBase {
+export class RestModel extends ModelBase {
     constructor(options) {
         super(options);
 
@@ -344,3 +301,5 @@ export default class RestModel extends ModelBase {
     }
 
 }
+
+export default RestModel;

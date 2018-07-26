@@ -536,6 +536,7 @@ class ModelProxy extends ModelBase {
 
 /**
  * Reference model implementation based on simple object arrays
+ * @class
  * @extends ModelBase
  */
 class ArrayModel extends ModelBase {
@@ -697,13 +698,25 @@ class ArrayModel extends ModelBase {
  * A Timeout Error
  */
 class TimeoutError extends Error {
+    /**
+     * cosntructor
+     */
     constructor() {
         super('A timeout has occured');
         this.name = 'TimeoutError';
     }
 }
 
+/**
+ * Remote Error. Encapsulates the service, a message and remote error stack if available.
+ */
 class RemoteError extends Error {
+    /**
+     * constructor
+     * @param {string} service The service or model that threw the exception.
+     * @param {string} msg A message indicating the reason.
+     * @param {string} stack A stack trace of the remote error if available.
+     */
     constructor(service, msg, stack) {
         super(`A remote service error has occured (${service}) => ${msg}`);
         this.name = "RemoteError";
@@ -712,7 +725,16 @@ class RemoteError extends Error {
     }
 }
 
+/**
+ * Unexpected remote response Error. Encapsulates service, a sample of the returned data and a message.
+ */
 class UnexpectedResponseError extends Error {
+    /**
+     * 
+     * @param {string} service The service or model that threw the exception.
+     * @param {*} sample A sample of the data returned.
+     * @param {string} msg A message indicating the reason.
+     */
     constructor(service, sample, msg) {
         super(`Remote service (${service}) responded with unexpected data => ${msg}`);
         this.name = "UnexpectedRemoteResponse";
@@ -721,7 +743,15 @@ class UnexpectedResponseError extends Error {
     }
 }
 
+/**
+ * Mock request error. Encapsulates mock errors thrown on unit test rest services.
+ */
 class MockRequestError extends Error {
+    /**
+     * constructor
+     * @param {object} response The response object of the mock request
+     * @param {object} request the request object of the mock request
+     */
     constructor(response, request) {
         super(`Mock Request Error: ${response.status}: ${response.statusText}`);
         this.response = response;
@@ -736,13 +766,24 @@ var errors = /*#__PURE__*/Object.freeze({
     MockRequestError: MockRequestError
 });
 
-const axios = require('axios');
+/**
+ * Utility timout function, calls timeoutFn if returned function isn't called without its timeout window.
+ * @param {functino} fn 
+ * @param {int} timeout 
+ * @param {function} timeoutFn 
+ */
 
-function leftPadLines(lines, padding, skip=0) {
+/**
+ * Takes a string and padds every line
+ * @param {string} lines A string containing multiple lines
+ * @param {int} padding Amount of left padding
+ * @param {int} skip Number of first lines to skip. (default 1)
+ */
+function leftPadLines(lines, padding, skip = 0) {
     lines = JSON.stringify(lines, null, 4).trim().split("\n");
 
     return lines.reduce((c, v, i) => {
-        if ( i <= skip ) {
+        if (i <= skip) {
             return c + v;
         } else {
             return c + "\n" + Array(padding).join(" ") + v;
@@ -750,13 +791,19 @@ function leftPadLines(lines, padding, skip=0) {
     }, '')
 }
 
+/**
+ * Helper function, capitalizes the first letter of every word in string.
+ * @param {string} value String to capitalize words.
+ * @param {int} skip Number of words to skip from begining.
+ * @return {string}
+ */
 function capitalize(value, skip) {
-    if ( value.constructor !== Array ) {
+    if (value.constructor !== Array) {
         value = [value];
     }
 
     return value.reduce((c, v, i) => {
-        if ( i <= skip ) {
+        if (i <= skip) {
             c.push(v);
         } else {
             c.push(v.charAt(0).toUpperCase() + v.slice(1));
@@ -765,9 +812,16 @@ function capitalize(value, skip) {
     }, []);
 }
 
+/**
+ * Capitalizes and removes spaces from string. Usually used on fields
+ * @param {string} value string to normalize
+ * @return {string}
+ */
 function normalizeField(value) {
     return capitalize(value.split(' '), 1).join('');
 }
+
+const axios = require('axios');
 
 /**
  * A generic and extensible Rest model.
@@ -1305,14 +1359,28 @@ class FrappeRestQueryAstTransform extends AstTransform {
 
 /**
  * A generic model which wraps Frappe's REST api for their Doctypes.
+ * @package thirdparty.models
+ * @extends RestModel
  */
 class FrappeDoctypeModel extends RestModel {
 
+    /**
+     * 
+     * @param {object} options 
+     */
     constructor(options) {
         super(Object.assign({
         }, options));
     }
 
+    /**
+     * Overwrites rest getEndPoint
+     * @param {string} action 
+     * @param {object} options 
+     * @param {*} id 
+     * @param {object} args 
+     * @param {*} data 
+     */
     getEndPoint(action, options, id, args, data) {
         let argStr = '';
         if (action == 'fetch') {
@@ -1366,6 +1434,11 @@ class FrappeDoctypeModel extends RestModel {
         return action in ACTIONS ? ACTIONS[action] : ACTIONS.default;
     }
 
+    /**
+     * Parses frappe server responses for error messages.
+     * @param {object} response 
+     * @param {string} label 
+     */
     handleFrappeErrors(response, label) {
         let rx = /(?:\<pre\>)([^<]+)(?:\<\/pre\>)/ig;
         let matches = rx.exec(response.data);
@@ -1374,6 +1447,11 @@ class FrappeDoctypeModel extends RestModel {
         throw new RemoteError((this.options.name || 'Frappe') + (label?`[${label}]`:''), msg, remoteTrace);
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @override
+     */
     async isConnected(data) {
         let endPoint = this.getEndPoint('method', this.options, 'frappe.auth.get_logged_user');
         return this.HTTP(endPoint).then(response => {
@@ -1385,6 +1463,11 @@ class FrappeDoctypeModel extends RestModel {
             });
     }
 
+    /**
+     * 
+     * @param {(function|object)} query 
+     * @override
+     */
     async fetch({where, orderby, start, limit}) {
 
         let filters,

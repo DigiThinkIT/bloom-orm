@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>queryUtils.js - Documentation</title>
+    <title>RemoteError - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,97 +27,233 @@
 
 <div id="main">
     
-    <h1 class="page-title">queryUtils.js</h1>
+    <h1 class="page-title">RemoteError</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * This is the default implementation of a query ascending behaviour.
- * Usually, custom models may replace this function generate their internal
- * query language.
- * @example
- * // used on a fetch query on some model.
- * model.fetch({ orderby: r => asc(r.id) });
- * @param {string} col The column to order in ascending order
- * @returns {function} A comparison function to use between two objects
- */
-export function asc(col) {
-    return function (a, b) {
-        return a[col] - b[col];
-    }
-}
+        <h2>
+        RemoteError
+        </h2>
+        
+            <div class="class-description"><p>Remote Error. Encapsulates the service, a message and remote error stack if available.</p></div>
+        
+    
+</header>
 
-/**
- * This is the default implementation of a query descending behaviour.
- * Usually, custom models may replace this function generate their internal
- * query language.
- * @example
- * // used on a fetch query on some model.
- * model.fetch({ orderby: r => desc(r.id) });
- * @param {string} col The column to order in descending order
- * @returns {function} A comparison function to use between two objects
- */
-export function desc(col) {
-    return function (a, b) {
-        return b[col] - a[col];
-    }
-}
+<article>
+    <div class="container-overview">
+    
+        
 
-/**
- * Helper function. It accumulates an array of asc or desc calls to implement
- * multi column sorting for local stores. It is usually used internally and should
- * not be used outside of building custom models.
- * @example
- * // multi column sorting
- * [
- *  {a: 1, b:1}, 
- *  {a:1, b: 2}, 
- *  {a: 2, b:1}, 
- *  {a: 2, b: 2}
- * ].sort(multiColSort([asc('a'), desc('b')]))
- * // result:
- * [
- *  {a: 1, b: 2},
- *  {a: 1, b: 1},
- *  {a: 2, b: 2},
- *  {a: 2, b: 1}
- * ]
- * @param {Array} orderby An array or single asc/desc function to accumulate
- * @returns {function} A comparison function which combines the provided array of sort functions.
- */
-export function multiColSort(orderby) {
-    if (orderby.constructor !== Array) {
-        orderby = [orderby];
-    }
+    
+    <h2>Constructor</h2>
+    
 
-    let fn = orderby.shift();
-    return function (a, b) {
-        let result = fn(a, b);
-        if (result === 0 &amp;&amp; orderby.length > 0) {
-            return multiColSort(orderby)(a, b);
-        }
+    <h4 class="name" id="RemoteError"><span class="type-signature"></span>new RemoteError<span class="signature">(service, msg, stack)</span><span class="type-signature"></span></h4>
 
-        return result;
-    }
-}
+    
 
-/**
- * 
- * @param {*} fn A value to test if is considered an arrow function.
- * @returns {boolean} true or false
- */
-export function isArrowFunction(fn) {
-    let fnSrc = fn.toString();
-    return (/^\s*(\(\s*\)|\([a-z0-9_=,\s+\{\}\.]+\)|[a-z0-9_\.]+)\s*=>.+/).test(fnSrc);
-}</code></pre>
-        </article>
-    </section>
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="errors.js.html">errors.js</a>, <a href="errors.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>constructor</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>service</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The service or model that threw the exception.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A message indicating the reason.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stack</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A stack trace of the remote error if available.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

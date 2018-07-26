@@ -3,9 +3,10 @@ import { ModelBase } from '../modelBase';
 
 /**
  * Reference model implementation based on simple object arrays
+ * @class
  * @extends ModelBase
  */
-export default class ArrayModel extends ModelBase {
+export class ArrayModel extends ModelBase {
     constructor(options) {
         super(options);
         this._data = this.options.data;
@@ -161,3 +162,5 @@ export default class ArrayModel extends ModelBase {
     }
 
 }
+
+export default ArrayModel;

@@ -5,14 +5,28 @@ import { RemoteError, UnexpectedResponseError } from '../errors';
 
 /**
  * A generic model which wraps Frappe's REST api for their Doctypes.
+ * @package thirdparty.models
+ * @extends RestModel
  */
-export default class FrappeDoctypeModel extends RestModel {
+export class FrappeDoctypeModel extends RestModel {
 
+    /**
+     * 
+     * @param {object} options 
+     */
     constructor(options) {
         super(Object.assign({
         }, options));
     }
 
+    /**
+     * Overwrites rest getEndPoint
+     * @param {string} action 
+     * @param {object} options 
+     * @param {*} id 
+     * @param {object} args 
+     * @param {*} data 
+     */
     getEndPoint(action, options, id, args, data) {
         let argStr = '';
         if (action == 'fetch') {
@@ -66,6 +80,11 @@ export default class FrappeDoctypeModel extends RestModel {
         return action in ACTIONS ? ACTIONS[action] : ACTIONS.default;
     }
 
+    /**
+     * Parses frappe server responses for error messages.
+     * @param {object} response 
+     * @param {string} label 
+     */
     handleFrappeErrors(response, label) {
         let rx = /(?:\<pre\>)([^<]+)(?:\<\/pre\>)/ig;
         let matches = rx.exec(response.data);
@@ -74,6 +93,11 @@ export default class FrappeDoctypeModel extends RestModel {
         throw new RemoteError((this.options.name || 'Frappe') + (label?`[${label}]`:''), msg, remoteTrace);
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @override
+     */
     async isConnected(data) {
         let endPoint = this.getEndPoint('method', this.options, 'frappe.auth.get_logged_user');
         return this.HTTP(endPoint).then(response => {
@@ -85,6 +109,11 @@ export default class FrappeDoctypeModel extends RestModel {
             });
     }
 
+    /**
+     * 
+     * @param {(function|object)} query 
+     * @override
+     */
     async fetch({where, orderby, start, limit}) {
 
         let filters,
@@ -171,3 +200,5 @@ export default class FrappeDoctypeModel extends RestModel {
     }
 
 }
+
+export default FrappeDoctypeModel;
