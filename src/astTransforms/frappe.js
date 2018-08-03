@@ -1,6 +1,26 @@
-import { AstTransform } from '../astTransforms';
+import { AstTransform, unwrap, AstValue } from '../astTransforms';
+
+export function FrappeValueFormatter(astValue) {
+    if (astValue.type == "string") {
+        return JSON.stringify(astValue.value);
+    } else if (astValue.type == "identifier") {
+        return astValue.value;
+    } else if (astValue.type == "number") {
+        return astValue.value;
+    } else if (astValue.type == "field") {
+        return JSON.stringify(astValue.value);
+    }
+
+    return astValue.value;
+}
 
 export default class FrappeRestQueryAstTransform extends AstTransform {
+
+    constructor(state, opts) {
+        super(state, Object.assign({
+            formatter: FrappeValueFormatter
+        }, opts));
+    }
 
     run(ast) {
         let result = super.run(ast);
@@ -15,57 +35,44 @@ export default class FrappeRestQueryAstTransform extends AstTransform {
         }
     }
 
-    onArrayExpression(elements) {
-        var elResolved = elements.reduce((c, v) => {
-            let value = v();
-            c.push(value);
-            return c;
-        }, []);
-
-        return elResolved.join(', ');
-    }
-
     onLogicalExpression(op, left, right) {
+        left = unwrap(left).format();
+        right = unwrap(right).format();
         if ( op != '&&' ) {
             new new Error(`Unsupported operator: ${op}`)
         }
-        return `[${left()}, ${right()}]`;
+        return AstValue(`[${left}, ${right}]`, 'logicalExpression', this.options.formatter);
     }
 
     onBinaryExpression(op, left, right) {
-        return `["${left()}", "${op}", ${right()}]`;
+        let leftValue = unwrap(left).format();
+        let rightValue = unwrap(right).format();
+        if ( op == '==' ) {
+            op = '=';
+        }
+        return AstValue(`[${leftValue}, "${op}", ${rightValue}]`, 'binaryExpression', this.options.formatter);
     }
 
     onCallExpression(callee, args) {
-        let calleeName = callee().toLowerCase();
+        let calleeName = unwrap(callee).format().toLowerCase();
+        let result = '';
         if ( calleeName == 'like' ) {
-            let field = args[0]();
-            let match = args[1]();
-            if ( typeof match == 'string' ) {
-                match = JSON.stringify(match);
-            }
-            return `["${field}", "LIKE", ${match}]`;
+            let field = unwrap(args[0]).format();
+            let match = unwrap(args[1]).format();
+            result = `[${field}, "LIKE", ${match}]`;
         } else if ( calleeName == 'asc' ) {
-            let field = args[0]();
-            return `${field} ASC`;
+            // frappe's asc, desc are only used during order_by calls
+            // which it self is a string that breaks formatting as handled
+            // by filter queries.
+            // We'll swap field type so we don't double quote fields.
+            let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+            result = `${field} ASC`;
         } else if (calleeName == 'desc') {
-            let field = args[0]();
-            return `${field} DESC`;
+            let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+            result = `${field} DESC`;
         }
-    }
 
-    onMemberExpression(computed, obj, property) {
-        if (computed) {
-            let objInst = obj();
-            let comp = property();
-            let objValue = objInst[comp];
-            return objValue;
-        } else {
-            let objKey = obj();
-            let objInst = this.state[objKey];
-            let objValue = objInst[property()];
-            return objValue;
-        }
+        return AstValue(result, 'callExpression', this.options.formatter);
     }
 
 }

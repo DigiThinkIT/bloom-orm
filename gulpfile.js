@@ -20,6 +20,7 @@ const srcPaths = ['./src/**/*.js']
 gulp.task('build-umd', () => {
     return rollup.rollup({
         input: 'src/main.js',
+        external: ['events', 'process', 'axios'],
         plugins: [
             builtin(),
             sourcemaps(),
@@ -49,12 +50,10 @@ gulp.task('build-umd', () => {
 gulp.task('build-cjs-es', () => {
     return rollup.rollup({
         input: 'src/main.js',
-        external: ['events'],
+        external: ['events', 'process', 'axios'],
         plugins: [
             sourcemaps(),
-            resolve({
-                preferBuiltins: true
-            }),
+            resolve(),
             replace({
                 ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
             }),
@@ -63,7 +62,7 @@ gulp.task('build-cjs-es', () => {
     }).then(bundle => {
         return bundle.write({
             name: 'js-data-frappe',
-            file: pkg.main, 
+            file: pkg.common, 
             format: 'cjs',
             sourcemap: true
         }).then(() => {

@@ -6,7 +6,9 @@ import ArrayModel from './models/array';
 import RestModel from './models/rest';
 import FrappeDoctypeModel from './models/frappeDoctype';
 import * as astTransforms from './astTransforms';
+import * as expressions from './expressions';
 import FrappeRestQueryAstTransform from './astTransforms/frappe';
+import MySQLAstTransform from './astTransforms/mysql';
 import * as errors from './errors';
 
 export function createModel(options) {
@@ -14,8 +16,10 @@ export function createModel(options) {
 }
 
 const transforms = {
+    expressions,
     astTransforms,
-    FrappeRestQueryAstTransform
+    FrappeRestQueryAstTransform,
+    MySQLAstTransform
 }
 
 export { 

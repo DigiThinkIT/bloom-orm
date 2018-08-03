@@ -28,7 +28,7 @@ for (let i = 0; i < 100; i++) {
 describe("Frappe Rest API Model", function () {
 
     beforeEach(function () {
-        this.mockRest = new MockRestAdapter();
+        this.mockRest = new MockRestAdapter(false);
         this.model = createModel({
             model: FrappeDoctypeModel,
             autoDisconnect: true,
@@ -140,7 +140,7 @@ describe("Frappe Rest API Model", function () {
                 results = results.sort(asc('value'));
             }
 
-            if (req.request.query.filters == '[["value", "==", 1000]]') {
+            if (req.request.query.filters == '[["value", "=", 1000]]') {
                 results = results.reduce((c, row) => {
                     if (row.value == 1000) {
                         c.push(row);
@@ -158,7 +158,7 @@ describe("Frappe Rest API Model", function () {
                 }, []);;
             }
 
-            if ( req.request.query.filters == '[["name", "==", 1]]') {
+            if ( req.request.query.filters == '[["name", "=", 1]]') {
                 results = results.reduce((c, row) => {
                         if ( row.name == 1 ) {
                             c.push(row);
@@ -185,7 +185,7 @@ describe("Frappe Rest API Model", function () {
                 }, []);;
             }
 
-            if (req.request.query.filters == '[["name", "==", 5]]') {
+            if (req.request.query.filters == '[["name", "=", 5]]') {
                 results = results.reduce((c, row) => {
                     if (row.name == 5) {
                         c.push(row);

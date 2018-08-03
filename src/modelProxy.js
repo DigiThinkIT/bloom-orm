@@ -81,11 +81,7 @@ export class ModelProxy extends ModelBase {
     constructor(options) {
         super(options);
 
-        if (typeof this.options.model == 'string') {
-            this._model = new require(this.options.model)(options);
-        } else {
-            this._model = new options.model(this.options);
-        }
+        this._model = new options.model(this.options);
     }
 
     get primaryKey() {

@@ -100,9 +100,8 @@ export class RestModel extends ModelBase {
     HTTP(endPoint) {
 
         let opts = Object.assign({
-            method: 'GET',
-            withCredentials: true        
-        }, endPoint);
+            method: 'GET'
+        },  this.options.defaultRequestOptions || {}, endPoint);
 
         if (this.options.debug) {
             console.log('\nHTTP CALL : ', leftPadLines(endPoint, 14));

@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    typeof define === 'function' && define.amd ? define(['exports'], factory) :
-    (factory((global['js-data-frappe'] = {})));
-}(this, (function (exports) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('events')) :
+    typeof define === 'function' && define.amd ? define(['exports', 'events'], factory) :
+    (factory((global['js-data-frappe'] = {}),global.events));
+}(this, (function (exports,events) { 'use strict';
 
     /**
      * This is the default implementation of a query ascending behaviour.
@@ -103,477 +103,11 @@
         }
     }
 
-    var domain;
-
-    // This constructor is used to store event handlers. Instantiating this is
-    // faster than explicitly calling `Object.create(null)` to get a "clean" empty
-    // object (tested with v8 v4.9).
-    function EventHandlers() {}
-    EventHandlers.prototype = Object.create(null);
-
-    function EventEmitter() {
-      EventEmitter.init.call(this);
-    }
-
-    // nodejs oddity
-    // require('events') === require('events').EventEmitter
-    EventEmitter.EventEmitter = EventEmitter;
-
-    EventEmitter.usingDomains = false;
-
-    EventEmitter.prototype.domain = undefined;
-    EventEmitter.prototype._events = undefined;
-    EventEmitter.prototype._maxListeners = undefined;
-
-    // By default EventEmitters will print a warning if more than 10 listeners are
-    // added to it. This is a useful default which helps finding memory leaks.
-    EventEmitter.defaultMaxListeners = 10;
-
-    EventEmitter.init = function() {
-      this.domain = null;
-      if (EventEmitter.usingDomains) {
-        // if there is an active domain, then attach to it.
-        if (domain.active) ;
-      }
-
-      if (!this._events || this._events === Object.getPrototypeOf(this)._events) {
-        this._events = new EventHandlers();
-        this._eventsCount = 0;
-      }
-
-      this._maxListeners = this._maxListeners || undefined;
-    };
-
-    // Obviously not all Emitters should be limited to 10. This function allows
-    // that to be increased. Set to zero for unlimited.
-    EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-      if (typeof n !== 'number' || n < 0 || isNaN(n))
-        throw new TypeError('"n" argument must be a positive number');
-      this._maxListeners = n;
-      return this;
-    };
-
-    function $getMaxListeners(that) {
-      if (that._maxListeners === undefined)
-        return EventEmitter.defaultMaxListeners;
-      return that._maxListeners;
-    }
-
-    EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-      return $getMaxListeners(this);
-    };
-
-    // These standalone emit* functions are used to optimize calling of event
-    // handlers for fast cases because emit() itself often has a variable number of
-    // arguments and can be deoptimized because of that. These functions always have
-    // the same number of arguments and thus do not get deoptimized, so the code
-    // inside them can execute faster.
-    function emitNone(handler, isFn, self) {
-      if (isFn)
-        handler.call(self);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self);
-      }
-    }
-    function emitOne(handler, isFn, self, arg1) {
-      if (isFn)
-        handler.call(self, arg1);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1);
-      }
-    }
-    function emitTwo(handler, isFn, self, arg1, arg2) {
-      if (isFn)
-        handler.call(self, arg1, arg2);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1, arg2);
-      }
-    }
-    function emitThree(handler, isFn, self, arg1, arg2, arg3) {
-      if (isFn)
-        handler.call(self, arg1, arg2, arg3);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1, arg2, arg3);
-      }
-    }
-
-    function emitMany(handler, isFn, self, args) {
-      if (isFn)
-        handler.apply(self, args);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].apply(self, args);
-      }
-    }
-
-    EventEmitter.prototype.emit = function emit(type) {
-      var er, handler, len, args, i, events, domain;
-      var doError = (type === 'error');
-
-      events = this._events;
-      if (events)
-        doError = (doError && events.error == null);
-      else if (!doError)
-        return false;
-
-      domain = this.domain;
-
-      // If there is no 'error' event listener then throw.
-      if (doError) {
-        er = arguments[1];
-        if (domain) {
-          if (!er)
-            er = new Error('Uncaught, unspecified "error" event');
-          er.domainEmitter = this;
-          er.domain = domain;
-          er.domainThrown = false;
-          domain.emit('error', er);
-        } else if (er instanceof Error) {
-          throw er; // Unhandled 'error' event
-        } else {
-          // At least give some kind of context to the user
-          var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-          err.context = er;
-          throw err;
-        }
-        return false;
-      }
-
-      handler = events[type];
-
-      if (!handler)
-        return false;
-
-      var isFn = typeof handler === 'function';
-      len = arguments.length;
-      switch (len) {
-        // fast cases
-        case 1:
-          emitNone(handler, isFn, this);
-          break;
-        case 2:
-          emitOne(handler, isFn, this, arguments[1]);
-          break;
-        case 3:
-          emitTwo(handler, isFn, this, arguments[1], arguments[2]);
-          break;
-        case 4:
-          emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
-          break;
-        // slower
-        default:
-          args = new Array(len - 1);
-          for (i = 1; i < len; i++)
-            args[i - 1] = arguments[i];
-          emitMany(handler, isFn, this, args);
-      }
-
-      return true;
-    };
-
-    function _addListener(target, type, listener, prepend) {
-      var m;
-      var events;
-      var existing;
-
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
-
-      events = target._events;
-      if (!events) {
-        events = target._events = new EventHandlers();
-        target._eventsCount = 0;
-      } else {
-        // To avoid recursion in the case that type === "newListener"! Before
-        // adding it to the listeners, first emit "newListener".
-        if (events.newListener) {
-          target.emit('newListener', type,
-                      listener.listener ? listener.listener : listener);
-
-          // Re-assign `events` because a newListener handler could have caused the
-          // this._events to be assigned to a new object
-          events = target._events;
-        }
-        existing = events[type];
-      }
-
-      if (!existing) {
-        // Optimize the case of one listener. Don't need the extra array object.
-        existing = events[type] = listener;
-        ++target._eventsCount;
-      } else {
-        if (typeof existing === 'function') {
-          // Adding the second element, need to change to array.
-          existing = events[type] = prepend ? [listener, existing] :
-                                              [existing, listener];
-        } else {
-          // If we've already got an array, just append.
-          if (prepend) {
-            existing.unshift(listener);
-          } else {
-            existing.push(listener);
-          }
-        }
-
-        // Check for listener leak
-        if (!existing.warned) {
-          m = $getMaxListeners(target);
-          if (m && m > 0 && existing.length > m) {
-            existing.warned = true;
-            var w = new Error('Possible EventEmitter memory leak detected. ' +
-                                existing.length + ' ' + type + ' listeners added. ' +
-                                'Use emitter.setMaxListeners() to increase limit');
-            w.name = 'MaxListenersExceededWarning';
-            w.emitter = target;
-            w.type = type;
-            w.count = existing.length;
-            emitWarning(w);
-          }
-        }
-      }
-
-      return target;
-    }
-    function emitWarning(e) {
-      typeof console.warn === 'function' ? console.warn(e) : console.log(e);
-    }
-    EventEmitter.prototype.addListener = function addListener(type, listener) {
-      return _addListener(this, type, listener, false);
-    };
-
-    EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-    EventEmitter.prototype.prependListener =
-        function prependListener(type, listener) {
-          return _addListener(this, type, listener, true);
-        };
-
-    function _onceWrap(target, type, listener) {
-      var fired = false;
-      function g() {
-        target.removeListener(type, g);
-        if (!fired) {
-          fired = true;
-          listener.apply(target, arguments);
-        }
-      }
-      g.listener = listener;
-      return g;
-    }
-
-    EventEmitter.prototype.once = function once(type, listener) {
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
-      this.on(type, _onceWrap(this, type, listener));
-      return this;
-    };
-
-    EventEmitter.prototype.prependOnceListener =
-        function prependOnceListener(type, listener) {
-          if (typeof listener !== 'function')
-            throw new TypeError('"listener" argument must be a function');
-          this.prependListener(type, _onceWrap(this, type, listener));
-          return this;
-        };
-
-    // emits a 'removeListener' event iff the listener was removed
-    EventEmitter.prototype.removeListener =
-        function removeListener(type, listener) {
-          var list, events, position, i, originalListener;
-
-          if (typeof listener !== 'function')
-            throw new TypeError('"listener" argument must be a function');
-
-          events = this._events;
-          if (!events)
-            return this;
-
-          list = events[type];
-          if (!list)
-            return this;
-
-          if (list === listener || (list.listener && list.listener === listener)) {
-            if (--this._eventsCount === 0)
-              this._events = new EventHandlers();
-            else {
-              delete events[type];
-              if (events.removeListener)
-                this.emit('removeListener', type, list.listener || listener);
-            }
-          } else if (typeof list !== 'function') {
-            position = -1;
-
-            for (i = list.length; i-- > 0;) {
-              if (list[i] === listener ||
-                  (list[i].listener && list[i].listener === listener)) {
-                originalListener = list[i].listener;
-                position = i;
-                break;
-              }
-            }
-
-            if (position < 0)
-              return this;
-
-            if (list.length === 1) {
-              list[0] = undefined;
-              if (--this._eventsCount === 0) {
-                this._events = new EventHandlers();
-                return this;
-              } else {
-                delete events[type];
-              }
-            } else {
-              spliceOne(list, position);
-            }
-
-            if (events.removeListener)
-              this.emit('removeListener', type, originalListener || listener);
-          }
-
-          return this;
-        };
-
-    EventEmitter.prototype.removeAllListeners =
-        function removeAllListeners(type) {
-          var listeners, events;
-
-          events = this._events;
-          if (!events)
-            return this;
-
-          // not listening for removeListener, no need to emit
-          if (!events.removeListener) {
-            if (arguments.length === 0) {
-              this._events = new EventHandlers();
-              this._eventsCount = 0;
-            } else if (events[type]) {
-              if (--this._eventsCount === 0)
-                this._events = new EventHandlers();
-              else
-                delete events[type];
-            }
-            return this;
-          }
-
-          // emit removeListener for all listeners on all events
-          if (arguments.length === 0) {
-            var keys = Object.keys(events);
-            for (var i = 0, key; i < keys.length; ++i) {
-              key = keys[i];
-              if (key === 'removeListener') continue;
-              this.removeAllListeners(key);
-            }
-            this.removeAllListeners('removeListener');
-            this._events = new EventHandlers();
-            this._eventsCount = 0;
-            return this;
-          }
-
-          listeners = events[type];
-
-          if (typeof listeners === 'function') {
-            this.removeListener(type, listeners);
-          } else if (listeners) {
-            // LIFO order
-            do {
-              this.removeListener(type, listeners[listeners.length - 1]);
-            } while (listeners[0]);
-          }
-
-          return this;
-        };
-
-    EventEmitter.prototype.listeners = function listeners(type) {
-      var evlistener;
-      var ret;
-      var events = this._events;
-
-      if (!events)
-        ret = [];
-      else {
-        evlistener = events[type];
-        if (!evlistener)
-          ret = [];
-        else if (typeof evlistener === 'function')
-          ret = [evlistener.listener || evlistener];
-        else
-          ret = unwrapListeners(evlistener);
-      }
-
-      return ret;
-    };
-
-    EventEmitter.listenerCount = function(emitter, type) {
-      if (typeof emitter.listenerCount === 'function') {
-        return emitter.listenerCount(type);
-      } else {
-        return listenerCount.call(emitter, type);
-      }
-    };
-
-    EventEmitter.prototype.listenerCount = listenerCount;
-    function listenerCount(type) {
-      var events = this._events;
-
-      if (events) {
-        var evlistener = events[type];
-
-        if (typeof evlistener === 'function') {
-          return 1;
-        } else if (evlistener) {
-          return evlistener.length;
-        }
-      }
-
-      return 0;
-    }
-
-    EventEmitter.prototype.eventNames = function eventNames() {
-      return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
-    };
-
-    // About 1.5x faster than the two-arg version of Array#splice().
-    function spliceOne(list, index) {
-      for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1)
-        list[i] = list[k];
-      list.pop();
-    }
-
-    function arrayClone(arr, i) {
-      var copy = new Array(i);
-      while (i--)
-        copy[i] = arr[i];
-      return copy;
-    }
-
-    function unwrapListeners(arr) {
-      var ret = new Array(arr.length);
-      for (var i = 0; i < ret.length; ++i) {
-        ret[i] = arr[i].listener || arr[i];
-      }
-      return ret;
-    }
-
     /**
      * Base Model abstract class. All models should implement all methods on this class.
      * @extends EventEmitter
      */
-    class ModelBase extends EventEmitter {
+    class ModelBase extends events.EventEmitter {
         /**
          * 
          * @param {*} options
@@ -728,11 +262,7 @@
         constructor(options) {
             super(options);
 
-            if (typeof this.options.model == 'string') {
-                this._model = new require(this.options.model)(options);
-            } else {
-                this._model = new options.model(this.options);
-            }
+            this._model = new options.model(this.options);
         }
 
         get primaryKey() {
@@ -1370,9 +900,8 @@
         HTTP(endPoint) {
 
             let opts = Object.assign({
-                method: 'GET',
-                withCredentials: true
-            }, endPoint);
+                method: 'GET'
+            }, this.options.defaultRequestOptions || {}, endPoint);
 
             if (this.options.debug) {
                 console.log('\nHTTP CALL : ', leftPadLines(endPoint, 14));
@@ -1597,6 +1126,10 @@
 
     }
 
+    var expressions = /*#__PURE__*/Object.freeze({
+        ExpressionBuilder: ExpressionBuilder
+    });
+
     class AstTransform {
         constructor(state, opts) {
             this.state = state;
@@ -1608,7 +1141,8 @@
                 allowCallExpressions: true,
                 allowLiterals: true,
                 allowIdentifier: true,
-                allowArrayExpression: false
+                allowArrayExpression: false,
+                formatter: deafultFormatter
             }, opts);
         }
 
@@ -1618,7 +1152,7 @@
             }
 
             let expFn = this.buildAstFnTree(ast);
-            return expFn();
+            return unwrap(expFn).format();
         }
 
         buildAstFnTree(ast) {
@@ -1655,70 +1189,131 @@
 
         onArrayExpression(elements) {
             var elResolved = elements.reduce((c, v) => {
-                let value = v();
-                if (typeof value == 'string') {
-                    value = JSON.stringify(value);
-                }
-                c.push(value);
+                let value = unwrap(v);
+                c.push(value.format());
                 return c;
             }, []);
 
-            return elResolved.join(', ');
+            let result = AstValue(elResolved.join(', '), 'arrayExpression', this.options.formatter);
+            return result;
         }
 
         onLogicalExpression(op, left, right) {
-
-            return `${left()} ${op} ${right()}`;
+            left = unwrap(left).format();
+            right = unwrap(right).format();
+            return AstValue(`${left} ${op} ${right}`, 'logicalExpression', this.options.formatter);
         }
 
         onBinaryExpression(op, left, right) {
-            let rightValue = right();
-            if (typeof rightValue == 'string') {
-                rightValue = JSON.stringify(rightValue);
-            }
-            return `${left()} ${op} ${rightValue}`;
+            let leftValue = unwrap(left).format();
+            let rightValue = unwrap(right).format();
+            return AstValue(`${leftValue} ${op} ${rightValue}`, 'binaryExpression', this.options.format);
         }
 
         onCallExpression(callee, args) {
             var argsResolved = args.reduce((c, v) => {
-                let value = v();
-                if (typeof value == 'string') {
-                    value = JSON.stringify(value);
-                }
+                let value = unwrap(v).format();
                 c.push(value);
                 return c;
             }, []);
-            return `${callee()}(${argsResolved.join(', ')})`;
+            return AstValue(`${callee()}(${argsResolved.join(', ')})`, 'callExpression', this.options.format);
         }
 
         onMemberExpression(computed, obj, property) {
             if (computed) {
-                let objInst = obj();
-                let comp = property();
-                let objValue = objInst[comp];
+                let objInst = unwrap(obj).value;
+                let comp = unwrap(property).format();
+                let value = objInst[comp];
+                let objValue = AstValue(value, null, this.options.formatter);
                 return objValue;
             } else {
-                let objKey = obj();
+                let objKey = unwrap(obj).format();
+                let prop = unwrap(property).format();
                 let objInst = this.state[objKey];
-                let objValue = objInst[property()];
+                let value = objInst[prop];
+                let type = objKey == 'r' ? 'field' : typeof value;
+                let objValue = AstValue(value, type, this.options.formatter);
                 return objValue;
             }
         }
 
         onIdentifier(name) {
-            return name;
+            return AstValue(name, "identifier", this.options.formatter);
         }
 
         onLiteral(value, raw) {
-            return value;
+            return AstValue(value, null, this.options.formatter);
         }
     }
 
+    function unwrap(value) {
+        while (typeof value === 'function') {
+            value = value();
+        }
+
+        return value;
+    }
+
+    function deafultFormatter(astValue) {
+        if (astValue.type == "string") {
+            return JSON.stringify(astValue.value);
+        } else if (astValue.type == "identifier") {
+            return astValue.value;
+        } else if (astValue.type == "number") {
+            return astValue.value;
+        }
+
+        return astValue.value;
+    }
+
+    function AstValue(value, type, formatter) {
+        if (!type) {
+            type = typeof value;
+        }
+        if (!formatter) {
+            formatter = deafultFormatter;
+        }
+
+        return {
+            value,
+            type,
+            [Symbol.toPrimitive](hint) {
+                return value;
+            },
+            format() {
+                return formatter ? formatter({ value, type }) : value;
+            }
+        };
+    }
+
     var astTransforms = /*#__PURE__*/Object.freeze({
-        AstTransform: AstTransform
+        AstTransform: AstTransform,
+        unwrap: unwrap,
+        deafultFormatter: deafultFormatter,
+        AstValue: AstValue
     });
 
+    function FrappeValueFormatter(astValue) {
+        if (astValue.type == "string") {
+            return JSON.stringify(astValue.value);
+        } else if (astValue.type == "identifier") {
+            return astValue.value;
+        } else if (astValue.type == "number") {
+            return astValue.value;
+        } else if (astValue.type == "field") {
+            return JSON.stringify(astValue.value);
+        }
+
+        return astValue.value;
+    }
+
     class FrappeRestQueryAstTransform extends AstTransform {
+
+        constructor(state, opts) {
+            super(state, Object.assign({
+                formatter: FrappeValueFormatter
+            }, opts));
+        }
 
         run(ast) {
             let result = super.run(ast);
@@ -1733,57 +1328,44 @@
             }
         }
 
-        onArrayExpression(elements) {
-            var elResolved = elements.reduce((c, v) => {
-                let value = v();
-                c.push(value);
-                return c;
-            }, []);
-
-            return elResolved.join(', ');
-        }
-
         onLogicalExpression(op, left, right) {
+            left = unwrap(left).format();
+            right = unwrap(right).format();
             if (op != '&&') {
                 new new Error(`Unsupported operator: ${op}`)();
             }
-            return `[${left()}, ${right()}]`;
+            return AstValue(`[${left}, ${right}]`, 'logicalExpression', this.options.formatter);
         }
 
         onBinaryExpression(op, left, right) {
-            return `["${left()}", "${op}", ${right()}]`;
+            let leftValue = unwrap(left).format();
+            let rightValue = unwrap(right).format();
+            if (op == '==') {
+                op = '=';
+            }
+            return AstValue(`[${leftValue}, "${op}", ${rightValue}]`, 'binaryExpression', this.options.formatter);
         }
 
         onCallExpression(callee, args) {
-            let calleeName = callee().toLowerCase();
+            let calleeName = unwrap(callee).format().toLowerCase();
+            let result = '';
             if (calleeName == 'like') {
-                let field = args[0]();
-                let match = args[1]();
-                if (typeof match == 'string') {
-                    match = JSON.stringify(match);
-                }
-                return `["${field}", "LIKE", ${match}]`;
+                let field = unwrap(args[0]).format();
+                let match = unwrap(args[1]).format();
+                result = `[${field}, "LIKE", ${match}]`;
             } else if (calleeName == 'asc') {
-                let field = args[0]();
-                return `${field} ASC`;
+                // frappe's asc, desc are only used during order_by calls
+                // which it self is a string that breaks formatting as handled
+                // by filter queries.
+                // We'll swap field type so we don't double quote fields.
+                let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+                result = `${field} ASC`;
             } else if (calleeName == 'desc') {
-                let field = args[0]();
-                return `${field} DESC`;
+                let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+                result = `${field} DESC`;
             }
-        }
 
-        onMemberExpression(computed, obj, property) {
-            if (computed) {
-                let objInst = obj();
-                let comp = property();
-                let objValue = objInst[comp];
-                return objValue;
-            } else {
-                let objKey = obj();
-                let objInst = this.state[objKey];
-                let objValue = objInst[property()];
-                return objValue;
-            }
+            return AstValue(result, 'callExpression', this.options.formatter);
         }
 
     }
@@ -1982,13 +1564,100 @@
 
     }
 
+    function MySQLValueFormatter(astValue) {
+      if (astValue.type == "string") {
+        return JSON.stringify(astValue.value);
+      } else if (astValue.type == "identifier") {
+        return astValue.value;
+      } else if (astValue.type == "number") {
+        return astValue.value;
+      } else if (astValue.type == "field") {
+        return `\`${astValue.value}\``;
+      }
+
+      return astValue.value;
+    }
+
+    class MySQLAstTransform extends AstTransform {
+
+      constructor(state, opts) {
+        super(state, Object.assign({
+          formatter: MySQLValueFormatter
+        }, opts));
+      }
+
+      run(ast) {
+        let result = super.run(ast);
+
+        if (typeof this.options.finalize == 'function') {
+          return this.options.finalize(result);
+        } else {
+          return result;
+        }
+      }
+
+      onLogicalExpression(op, left, right) {
+        let opStr = "";
+
+        if (op == '&&') {
+          opStr = "AND";
+        } else if (op == '||') {
+          opStr = "OR";
+        } else {
+          new new Error(`Unsupported operator: ${op}`)();
+        }
+
+        let leftValue = unwrap(left).format();
+        let rightValue = unwrap(right).format();
+
+        return AstValue(`(${leftValue} ${opStr} ${rightValue})`, 'logicalExpression', this.options.formatter);
+      }
+
+      onBinaryExpression(op, left, right) {
+        let opStr = op;
+        if (opStr == '==') {
+          opStr = '=';
+        }
+        let leftValue = unwrap(left).format();
+        let rightValue = unwrap(right).format();
+
+        return AstValue(`${leftValue} ${opStr} ${rightValue}`, 'binaryExpression', this.options.formatter);
+      }
+
+      onCallExpression(callee, args) {
+        let calleeName = unwrap(callee).format().toLowerCase();
+        let result = '';
+        if (calleeName == 'like') {
+          let field = unwrap(args[0]).format();
+          let match = unwrap(args[1]).format();
+          result = `${field} LIKE ${match}`;
+        } else if (calleeName == 'notLike') {
+          let field = unwrap(args[0]).format();
+          let match = unwrap(args[1]).format();
+          result = `${field} NOT LIKE ${match}`;
+        } else if (calleeName == 'asc') {
+          let field = unwrap(args[0]).format();
+          result = `${field} ASC`;
+        } else if (calleeName == 'desc') {
+          let field = unwrap(args[0]).format();
+          result = `${field} DESC`;
+        }
+
+        result = AstValue(result, 'callExpression', this.options.formatter);
+        return result;
+      }
+
+    }
+
     function createModel(options) {
         return new ModelProxy(options);
     }
 
     const transforms = {
+        expressions,
         astTransforms,
-        FrappeRestQueryAstTransform
+        FrappeRestQueryAstTransform,
+        MySQLAstTransform
     };
 
     exports.createModel = createModel;

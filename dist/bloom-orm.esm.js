@@ -257,11 +257,7 @@ class ModelProxy extends ModelBase {
     constructor(options) {
         super(options);
 
-        if (typeof this.options.model == 'string') {
-            this._model = new require(this.options.model)(options);
-        } else {
-            this._model = new options.model(this.options);
-        }
+        this._model = new options.model(this.options);
     }
 
     get primaryKey() {
@@ -914,9 +910,8 @@ class RestModel extends ModelBase {
     HTTP(endPoint) {
 
         let opts = Object.assign({
-            method: 'GET',
-            withCredentials: true        
-        }, endPoint);
+            method: 'GET'
+        },  this.options.defaultRequestOptions || {}, endPoint);
 
         if (this.options.debug) {
             console.log('\nHTTP CALL : ', leftPadLines(endPoint, 14));
@@ -1142,6 +1137,10 @@ class ExpressionBuilder {
 
 }
 
+var expressions = /*#__PURE__*/Object.freeze({
+    ExpressionBuilder: ExpressionBuilder
+});
+
 class AstTransform {
     constructor(state, opts) {
         this.state = state;
@@ -1153,7 +1152,8 @@ class AstTransform {
             allowCallExpressions: true,
             allowLiterals: true,
             allowIdentifier: true,
-            allowArrayExpression: false
+            allowArrayExpression: false,
+            formatter: deafultFormatter
         }, opts);
     }
 
@@ -1163,7 +1163,7 @@ class AstTransform {
         }
 
         let expFn = this.buildAstFnTree(ast);
-        return expFn();
+        return unwrap(expFn).format();
     }
 
     buildAstFnTree(ast) {       
@@ -1220,70 +1220,131 @@ class AstTransform {
 
     onArrayExpression(elements) {
         var elResolved = elements.reduce((c, v) => {
-            let value = v();
-            if (typeof value == 'string') {
-                value = JSON.stringify(value);
-            }
-            c.push(value);
+            let value = unwrap(v);
+            c.push(value.format());
             return c;
         }, []);
 
-        return elResolved.join(', ');
+        let result = AstValue(elResolved.join(', '), 'arrayExpression', this.options.formatter);
+        return result;
     }
 
     onLogicalExpression(op, left, right) {
-
-        return `${left()} ${op} ${right()}`;
+        left = unwrap(left).format();
+        right = unwrap(right).format();
+        return AstValue(`${left} ${op} ${right}`, 'logicalExpression', this.options.formatter);
     }
 
     onBinaryExpression(op, left, right) {
-        let rightValue = right();
-        if ( typeof rightValue == 'string' ) {
-            rightValue = JSON.stringify(rightValue);
-        }
-        return `${left()} ${op} ${rightValue}`;
+        let leftValue = unwrap(left).format();
+        let rightValue = unwrap(right).format();
+        return AstValue(`${leftValue} ${op} ${rightValue}`, 'binaryExpression', this.options.format);
     }
 
     onCallExpression(callee, args) {
         var argsResolved = args.reduce((c, v) => {
-            let value = v();
-            if ( typeof value == 'string' ) {
-                value = JSON.stringify(value);
-            }
+            let value = unwrap(v).format();
             c.push(value);
             return c;
         }, []);
-        return `${callee()}(${argsResolved.join(', ')})`;
+        return AstValue(`${callee()}(${argsResolved.join(', ')})`, 'callExpression', this.options.format);
     }
 
     onMemberExpression(computed, obj, property) {
         if (computed) {
-            let objInst = obj();
-            let comp = property();
-            let objValue = objInst[comp];
+            let objInst = unwrap(obj).value;
+            let comp = unwrap(property).format();
+            let value = objInst[comp];
+            let objValue = AstValue(value, null, this.options.formatter);
             return objValue;
         } else {
-            let objKey = obj();
+            let objKey = unwrap(obj).format();
+            let prop = unwrap(property).format();
             let objInst = this.state[objKey];
-            let objValue = objInst[property()];
+            let value = objInst[prop];
+            let type = objKey == 'r' ? 'field' : typeof value;
+            let objValue = AstValue(value, type, this.options.formatter);
             return objValue;
         }
     }
 
     onIdentifier(name) {
-        return name;
+        return AstValue(name, "identifier", this.options.formatter);
     }
 
     onLiteral(value, raw) {
-        return value;
+        return AstValue(value, null, this.options.formatter);
     }
 }
 
+function unwrap(value) {
+    while(typeof value === 'function') {
+        value = value();
+    }
+
+    return value;
+}
+
+function deafultFormatter(astValue) {
+    if (astValue.type == "string") {
+        return JSON.stringify(astValue.value);
+    } else if (astValue.type == "identifier") {
+        return astValue.value;
+    } else if (astValue.type == "number") {
+        return astValue.value;
+    }
+
+    return astValue.value;
+}
+
+function AstValue(value, type, formatter) {
+    if (!type) {
+        type = typeof value;
+    }
+    if (!formatter) {
+        formatter = deafultFormatter;
+    }
+
+    return {
+        value,
+        type,
+        [Symbol.toPrimitive](hint) {
+            return value;
+        },
+        format() {
+            return (formatter) ? formatter({ value, type }) : value;
+        }
+    };
+}
+
 var astTransforms = /*#__PURE__*/Object.freeze({
-    AstTransform: AstTransform
+    AstTransform: AstTransform,
+    unwrap: unwrap,
+    deafultFormatter: deafultFormatter,
+    AstValue: AstValue
 });
 
+function FrappeValueFormatter(astValue) {
+    if (astValue.type == "string") {
+        return JSON.stringify(astValue.value);
+    } else if (astValue.type == "identifier") {
+        return astValue.value;
+    } else if (astValue.type == "number") {
+        return astValue.value;
+    } else if (astValue.type == "field") {
+        return JSON.stringify(astValue.value);
+    }
+
+    return astValue.value;
+}
+
 class FrappeRestQueryAstTransform extends AstTransform {
+
+    constructor(state, opts) {
+        super(state, Object.assign({
+            formatter: FrappeValueFormatter
+        }, opts));
+    }
 
     run(ast) {
         let result = super.run(ast);
@@ -1298,57 +1359,44 @@ class FrappeRestQueryAstTransform extends AstTransform {
         }
     }
 
-    onArrayExpression(elements) {
-        var elResolved = elements.reduce((c, v) => {
-            let value = v();
-            c.push(value);
-            return c;
-        }, []);
-
-        return elResolved.join(', ');
-    }
-
     onLogicalExpression(op, left, right) {
+        left = unwrap(left).format();
+        right = unwrap(right).format();
         if ( op != '&&' ) {
             new new Error(`Unsupported operator: ${op}`);
         }
-        return `[${left()}, ${right()}]`;
+        return AstValue(`[${left}, ${right}]`, 'logicalExpression', this.options.formatter);
     }
 
     onBinaryExpression(op, left, right) {
-        return `["${left()}", "${op}", ${right()}]`;
+        let leftValue = unwrap(left).format();
+        let rightValue = unwrap(right).format();
+        if ( op == '==' ) {
+            op = '=';
+        }
+        return AstValue(`[${leftValue}, "${op}", ${rightValue}]`, 'binaryExpression', this.options.formatter);
     }
 
     onCallExpression(callee, args) {
-        let calleeName = callee().toLowerCase();
+        let calleeName = unwrap(callee).format().toLowerCase();
+        let result = '';
         if ( calleeName == 'like' ) {
-            let field = args[0]();
-            let match = args[1]();
-            if ( typeof match == 'string' ) {
-                match = JSON.stringify(match);
-            }
-            return `["${field}", "LIKE", ${match}]`;
+            let field = unwrap(args[0]).format();
+            let match = unwrap(args[1]).format();
+            result = `[${field}, "LIKE", ${match}]`;
         } else if ( calleeName == 'asc' ) {
-            let field = args[0]();
-            return `${field} ASC`;
+            // frappe's asc, desc are only used during order_by calls
+            // which it self is a string that breaks formatting as handled
+            // by filter queries.
+            // We'll swap field type so we don't double quote fields.
+            let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+            result = `${field} ASC`;
         } else if (calleeName == 'desc') {
-            let field = args[0]();
-            return `${field} DESC`;
+            let field = AstValue(unwrap(args[0]).value, "identifier", this.options.formatter).format();
+            result = `${field} DESC`;
         }
-    }
 
-    onMemberExpression(computed, obj, property) {
-        if (computed) {
-            let objInst = obj();
-            let comp = property();
-            let objValue = objInst[comp];
-            return objValue;
-        } else {
-            let objKey = obj();
-            let objInst = this.state[objKey];
-            let objValue = objInst[property()];
-            return objValue;
-        }
+        return AstValue(result, 'callExpression', this.options.formatter);
     }
 
 }
@@ -1551,13 +1599,100 @@ class FrappeDoctypeModel extends RestModel {
 
 }
 
+function MySQLValueFormatter(astValue) {
+  if (astValue.type == "string") {
+    return JSON.stringify(astValue.value);
+  } else if (astValue.type == "identifier") {
+    return astValue.value;
+  } else if (astValue.type == "number") {
+    return astValue.value;
+  } else if (astValue.type == "field" ) {
+    return `\`${astValue.value}\``;
+  }
+
+  return astValue.value;
+}
+
+class MySQLAstTransform extends AstTransform {
+
+    constructor(state, opts) {
+      super(state, Object.assign({
+        formatter: MySQLValueFormatter
+      }, opts));
+    }
+
+    run(ast) {
+      let result = super.run(ast);
+
+      if ( typeof this.options.finalize == 'function' ) {
+        return this.options.finalize(result);
+      } else {
+        return result;
+      }
+    }
+
+    onLogicalExpression(op, left, right) {
+      let opStr = "";
+
+      if ( op == '&&' ) {
+        opStr = "AND";
+      } else if ( op == '||') {
+        opStr = "OR";
+      } else {
+        new new Error(`Unsupported operator: ${op}`);
+      }
+
+      let leftValue = unwrap(left).format();
+      let rightValue = unwrap(right).format();
+
+      return AstValue(`(${leftValue} ${opStr} ${rightValue})`, 'logicalExpression', this.options.formatter);
+    }
+
+    onBinaryExpression(op, left, right) {
+      let opStr = op;
+      if ( opStr == '==' ) {
+        opStr = '=';
+      }
+      let leftValue = unwrap(left).format();
+      let rightValue = unwrap(right).format();
+
+      return AstValue(`${leftValue} ${opStr} ${rightValue}`, 'binaryExpression', this.options.formatter);
+    }
+
+    onCallExpression(callee, args) {
+        let calleeName = unwrap(callee).format().toLowerCase();
+        let result = '';
+        if ( calleeName == 'like' ) {
+          let field = unwrap(args[0]).format();
+          let match = unwrap(args[1]).format();
+          result = `${field} LIKE ${match}`;
+        } else if ( calleeName == 'notLike' ) {
+          let field = unwrap(args[0]).format();
+          let match = unwrap(args[1]).format();
+          result = `${field} NOT LIKE ${match}`;
+        } else if ( calleeName == 'asc' ) {
+          let field = unwrap(args[0]).format();
+          result = `${field} ASC`;
+        } else if (calleeName == 'desc') {
+          let field = unwrap(args[0]).format();
+          result = `${field} DESC`;
+        }
+
+        result = AstValue(result, 'callExpression', this.options.formatter);
+        return result;
+    }
+
+}
+
 function createModel(options) {
     return new ModelProxy(options);
 }
 
 const transforms = {
+    expressions,
     astTransforms,
-    FrappeRestQueryAstTransform
+    FrappeRestQueryAstTransform,
+    MySQLAstTransform
 };
 
 export { createModel, ModelProxy, queryUtils, Schema, ModelBase, ArrayModel, RestModel, FrappeDoctypeModel, transforms, errors };
